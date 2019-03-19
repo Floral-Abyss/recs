@@ -20,6 +20,12 @@ function EventStepper.new(event, systems)
 end
 
 function EventStepper:start()
+    for _, system in ipairs(self._systems) do
+        if system.init then
+            system:init()
+        end
+    end
+
     self._cleaner.stepConnection = self._event:Connect(function(...)
         for _, system in ipairs(self._systems) do
             system:step(...)
