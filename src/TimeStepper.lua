@@ -17,12 +17,6 @@ function TimeStepper.new(interval, systems)
 end
 
 function TimeStepper:start()
-    for _, system in ipairs(self._systems) do
-        if system.init then
-            system:init()
-        end
-    end
-
     coroutine.resume(coroutine.create(function()
         while true do
             local timeStep, _ = wait(self._interval)

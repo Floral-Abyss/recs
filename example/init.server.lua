@@ -23,6 +23,26 @@ function TestSystem:step(deltaTime)
     end
 end
 
+function TestSystem:onTestComponentAdded(instance, component)
+    print("interest added", instance:GetFullName(), component.c)
+end
+
+function TestSystem:onTestComponentRemoved(instance, component)
+    print("interest removed", instance:GetFullName(), component.c)
+end
+
+TestSystem.interest {
+    interest = RECS.System.InterestType.Added,
+    component = TestComponent,
+    callback = TestSystem.onTestComponentAdded,
+}
+
+TestSystem.interest {
+    interest = RECS.System.InterestType.Removed,
+    component = TestComponent,
+    callback = TestSystem.onTestComponentRemoved,
+}
+
 local HandleChangeSystem = RECS.System:extend("HandleChangeSystem")
 
 function HandleChangeSystem:step(property)
@@ -41,3 +61,8 @@ core:registerSystems({
 })
 
 core:start()
+print("started")
+wait(1)
+
+game:GetService("CollectionService"):RemoveTag(workspace.Part, "Test")
+print("tag removed")

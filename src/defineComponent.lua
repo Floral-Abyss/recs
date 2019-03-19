@@ -16,7 +16,7 @@ local errorFormats = {
 function defineComponent(tagName, defaultProps)
     assert(
         typeof(tagName) == "string",
-        errorFormats.nonStringName(typeof(tagName)))
+        errorFormats.nonStringName:format(typeof(tagName)))
     
     assert(
         defaultProps == nil or typeof(defaultProps) == "table",
