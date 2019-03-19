@@ -23,6 +23,7 @@ function System:extend(systemName)
 end
 
 function System:step()
+    error("override System:step() to provide functionality for your system", 0)
 end
 
 return System
