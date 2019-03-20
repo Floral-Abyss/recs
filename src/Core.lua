@@ -23,8 +23,6 @@ function Core.new(args)
         cleaner = createCleaner(),
         _steppers = {},
         _systems = {},
-        _addedInterests = {},
-        _removedInterests = {},
         _components = {},
         _componentDefs = {},
         _singletonComponents = {},
@@ -51,13 +49,7 @@ function Core:registerSystems(systemRegistration)
             table.insert(self._systems, systemInstance)
             table.insert(systemInstances, systemInstance)
         end
-
-        if stepperDefinition.type == "interval" then
-            table.insert(steppers, TimeStepper.new(stepperDefinition.interval, systemInstances))
-        elseif stepperDefinition.type == "event" then
-            table.insert(steppers, EventStepper.new(stepperDefinition.event, systemInstances))
         end
-    end
 
     self._steppers = steppers
 end
@@ -67,38 +59,7 @@ function Core:start()
         if system.init then
             system:init()
         end
-
-        for _, interest in ipairs(system.interests) do
-            local tagName = interest.component.tagName
-
-            if interest.kind == System.InterestType.Added then
-                -- Run the callback for all the currently added systems.
-                for robloxInstance, componentInstance in pairs(self._components[tagName]) do
-                    interest.callback(system, robloxInstance, componentInstance)
                 end
-
-                if self._addedInterests[tagName] == nil then
-                    self._addedInterests[tagName] = {}
-                end
-
-                -- We don't store the system in an accessible fashion.
-                -- Bind a callback that pulls the system in.
-                table.insert(self._addedInterests[tagName], function(instance, component)
-                    interest.callback(system, instance, component)
-                end)
-            elseif interest.kind == System.InterestType.Removed then
-                if self._removedInterests[tagName] == nil then
-                    self._removedInterests[tagName] = {}
-                end
-
-                -- We don't store the system in an accessible fashion.
-                -- Bind a callback that pulls the system in.
-                table.insert(self._removedInterests[tagName], function(instance, component)
-                    interest.callback(system, instance, component)
-                end)
-            end
-        end
-    end
 
     for _, stepper in ipairs(self._steppers) do
         stepper:start()
@@ -124,26 +85,9 @@ function Core:registerComponent(componentDefinition)
 
     self.cleaner["componentTagAdded." .. tagName] = addedSignal:Connect(function(instance)
         local component = self:_addComponent(instance, tagName)
-
-        -- Call the interested callbacks after the component has been added.
-        local interestedCallbacks = self._addedInterests[tagName]
-        if interestedCallbacks ~= nil then
-            for _, callback in ipairs(interestedCallbacks) do
-                callback(instance, component)
-            end
-        end
     end)
 
     self.cleaner["componentTagRemoved." .. tagName] = removedSignal:Connect(function(instance)
-        -- Before we remove the component, call the interested callbacks.
-        local component = self._components[componentDefinition.tagName][instance]
-        local interestedCallbacks = self._removedInterests[tagName]
-        if interestedCallbacks ~= nil then
-            for _, callback in ipairs(interestedCallbacks) do
-                callback(instance, component)
-            end
-        end
-
         self:_removeComponent(instance, tagName)
     end)
 

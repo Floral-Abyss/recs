@@ -11,7 +11,6 @@ System.InterestType = {
 function System:extend(systemName)
     local systemClass = setmetatable({
         className = systemName,
-        interests = {},
     }, {
         __index = System,
     })
@@ -26,19 +25,6 @@ function System:extend(systemName)
         })
 
         return systemInstance
-    end
-
-    function systemClass.interest(args)
-        assert(typeof(args) == "table", "args must be a table")
-        assert(typeof(args.interest) == "number" and (args.interest == System.InterestType.Added or args.interest == System.InterestType.Removed), "args.interest must be System.InterestType")
-        assert(typeof(args.component == "table"), "args.component must be a ComponentDefinition")
-        assert(typeof(args.callback == "function", "args.callback must be a function"))
-        
-        table.insert(systemClass.interests, {
-            kind = args.interest,
-            component = args.component,
-            callback = args.callback,
-        })
     end
 
     setmetatable(systemClass, System)
