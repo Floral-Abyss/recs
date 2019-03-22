@@ -1,21 +1,17 @@
-local function interval(interval)
-    return function(systemsArray)
-        return {
-            type = "interval",
-            interval = interval,
-            systemClasses = systemsArray,
-        }
-    end
+local function interval(intervalLength, systemsArray)
+    return {
+        type = "interval",
+        interval = intervalLength,
+        systemClasses = systemsArray,
+    }
 end
 
-local function event(event)
-    return function(systemsArray)
-        return {
-            type = "event",
-            event = event,
-            systemClasses = systemsArray,
-        }
-    end
+local function event(eventObject, systemsArray)
+    return {
+        type = "event",
+        event = eventObject,
+        systemClasses = systemsArray,
+    }
 end
 
 return {

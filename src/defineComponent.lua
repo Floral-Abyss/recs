@@ -4,6 +4,8 @@ todo lol
 
 ]]
 
+local createCleaner = require(script.Parent.createCleaner)
+
 local errorFormats = {
     nonStringName = "tagName (1) must be a string, is a %s",
     nonTableDefaultProps = "defaultProps (2) must be a table or nil, is a %s",
@@ -13,11 +15,11 @@ local errorFormats = {
     overrideNonexistentKey = "Component property override module %s is trying to override %s.%s, which does not exist in the %s component.",
 }
 
-function defineComponent(tagName, defaultProps)
+local function defineComponent(tagName, defaultProps)
     assert(
         typeof(tagName) == "string",
         errorFormats.nonStringName:format(typeof(tagName)))
-    
+
     assert(
         defaultProps == nil or typeof(defaultProps) == "table",
         errorFormats.nonTableDefaultProps:format(typeof(defaultProps)))
@@ -26,7 +28,7 @@ function defineComponent(tagName, defaultProps)
     definition.tagName = tagName
     definition.defaultProps = defaultProps or {}
 
-    function definition:_create(instance)
+    function definition._create(instance)
         local component = {}
 
         for key, value in pairs(definition.defaultProps) do
@@ -35,6 +37,7 @@ function defineComponent(tagName, defaultProps)
 
         component.tagName = tagName
         component.instance = instance
+        component.maid = createCleaner()
 
         local componentPropsModule = instance:FindFirstChild("ComponentProps")
         if componentPropsModule ~= nil then
@@ -58,7 +61,7 @@ function defineComponent(tagName, defaultProps)
                     assert(
                         definition.defaultProps[overrideKey] ~= nil,
                         errorFormats.overrideNonexistentKey:format(fullName, tagName, overrideKey, tagName))
-                    
+
                     component[overrideKey] = overrideValue
                 end
             end

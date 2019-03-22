@@ -14,6 +14,14 @@ local TestSystem = RECS.System:extend("TestSystem")
 
 function TestSystem:init()
     print("system init")
+
+    self.maid.testComponentAddedConnection = self.core:getComponentAddedSignal(TestComponent):Connect(function(testComponent, instance)
+        print("test component added to " .. instance:GetFullName(), testComponent.c)
+    end)
+
+    self.maid.testComponentRemovingConnection = self.core:getComponentRemovingSignal(TestComponent):Connect(function(testComponent, instance)
+        print("test component removed from " .. instance:GetFullName(), testComponent.c)
+    end)
 end
 
 function TestSystem:step(deltaTime)
@@ -22,26 +30,6 @@ function TestSystem:step(deltaTime)
         print(testComponent.a)
     end
 end
-
-function TestSystem:onTestComponentAdded(instance, component)
-    print("interest added", instance:GetFullName(), component.c)
-end
-
-function TestSystem:onTestComponentRemoved(instance, component)
-    print("interest removed", instance:GetFullName(), component.c)
-end
-
-TestSystem.interest {
-    interest = RECS.System.InterestType.Added,
-    component = TestComponent,
-    callback = TestSystem.onTestComponentAdded,
-}
-
-TestSystem.interest {
-    interest = RECS.System.InterestType.Removed,
-    component = TestComponent,
-    callback = TestSystem.onTestComponentRemoved,
-}
 
 local HandleChangeSystem = RECS.System:extend("HandleChangeSystem")
 
@@ -52,12 +40,12 @@ end
 core:registerComponent(TestComponent)
 
 core:registerSystems({
-    RECS.interval(1) {
+    RECS.interval(1, {
         TestSystem,
-    },
-    RECS.event(game:GetService("Workspace").Baseplate.Changed) {
+    }),
+    RECS.event(game:GetService("Workspace").Baseplate.Changed, {
         HandleChangeSystem,
-    },
+    }),
 })
 
 core:start()

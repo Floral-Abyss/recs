@@ -10,6 +10,7 @@ local CollectionService = game:GetService("CollectionService")
 local EventStepper = require(script.Parent.EventStepper)
 local TimeStepper = require(script.Parent.TimeStepper)
 local createCleaner = require(script.Parent.createCleaner)
+local createSignal = require(script.Parent.createSignal)
 local System = require(script.Parent.System)
 
 local Core = {}
@@ -25,6 +26,8 @@ function Core.new(args)
         _systems = {},
         _components = {},
         _componentDefs = {},
+        _componentAddedSignals = {},
+        _componentRemovingSignals = {},
         _singletonComponents = {},
         _plugins = plugins,
     }, Core)
@@ -49,7 +52,15 @@ function Core:registerSystems(systemRegistration)
             table.insert(self._systems, systemInstance)
             table.insert(systemInstances, systemInstance)
         end
+
+        if stepperDefinition.type == "event" then
+            table.insert(steppers, EventStepper.new(stepperDefinition.event, systemInstances))
+        elseif stepperDefinition.type == "interval" then
+            table.insert(steppers, TimeStepper.new(stepperDefinition.interval, systemInstances))
+        else
+            error(("Unknown stepper definition kind %s"):format(stepperDefinition.type), 0)
         end
+    end
 
     self._steppers = steppers
 end
@@ -59,11 +70,63 @@ function Core:start()
         if system.init then
             system:init()
         end
-                end
+    end
+
+    for _, componentDefinition in pairs(self._componentDefs) do
+        self:_initiateComponent(componentDefinition)
+    end
 
     for _, stepper in ipairs(self._steppers) do
         stepper:start()
     end
+end
+
+local function resolveComponentByIdentifier(componentIdentifier)
+    if typeof(componentIdentifier) == "string" then
+        return componentIdentifier
+    elseif typeof(componentIdentifier) == "table" then
+        return componentIdentifier.tagName
+    else
+        error(("Component identifier %q of type %s is not usable"):format(tostring(componentIdentifier), typeof(componentIdentifier)), 0)
+    end
+end
+
+function Core:_getComponentSignal(componentIdentifier, eventCache)
+    local tagName = resolveComponentByIdentifier(componentIdentifier)
+
+    local signal = eventCache[tagName]
+    if signal == nil then
+        signal = createSignal()
+        eventCache[tagName] = signal
+    end
+
+    return signal
+end
+
+function Core:getComponentAddedSignal(componentIdentifier)
+    return self:_getComponentSignal(componentIdentifier, self._componentAddedSignals)
+end
+
+function Core:getComponentRemovingSignal(componentIdentifier)
+    return self:_getComponentSignal(componentIdentifier, self._componentRemovingSignals)
+end
+
+function Core:_initiateComponent(componentDefinition)
+    local tagName = componentDefinition.tagName
+    local addedSignal = CollectionService:GetInstanceAddedSignal(tagName)
+    local removedSignal = CollectionService:GetInstanceRemovedSignal(tagName)
+
+    for _, instance in ipairs(CollectionService:GetTagged(tagName)) do
+        self:_addComponent(instance, tagName)
+    end
+
+    self.cleaner["componentTagAdded." .. tagName] = addedSignal:Connect(function(instance)
+        self:_addComponent(instance, tagName)
+    end)
+
+    self.cleaner["componentTagRemoved." .. tagName] = removedSignal:Connect(function(instance)
+        self:_removeComponent(instance, tagName)
+    end)
 end
 
 function Core:registerComponent(componentDefinition)
@@ -76,21 +139,6 @@ function Core:registerComponent(componentDefinition)
     self._componentDefs[tagName] = componentDefinition
     self._components[tagName] = {}
 
-    local addedSignal = CollectionService:GetInstanceAddedSignal(tagName)
-    local removedSignal = CollectionService:GetInstanceRemovedSignal(tagName)
-
-    for _, instance in ipairs(CollectionService:GetTagged(tagName)) do
-        self:_addComponent(instance, tagName)
-    end
-
-    self.cleaner["componentTagAdded." .. tagName] = addedSignal:Connect(function(instance)
-        local component = self:_addComponent(instance, tagName)
-    end)
-
-    self.cleaner["componentTagRemoved." .. tagName] = removedSignal:Connect(function(instance)
-        self:_removeComponent(instance, tagName)
-    end)
-
     for _, plugin in ipairs(self._plugins) do
         if plugin.componentRegistered then
             plugin.componentRegistered(componentDefinition)
@@ -98,24 +146,28 @@ function Core:registerComponent(componentDefinition)
     end
 end
 
-function Core:getComponent(instance, componentDefinition)
-    local component = self._components[componentDefinition.tagName][instance]
+function Core:getComponent(instance, componentIdentifier)
+    local component = self._components[resolveComponentByIdentifier(componentIdentifier)][instance]
     return component
 end
 
-function Core:hasComponent(instance, componentDefinition)
-    return self:getComponent(instance, componentDefinition) ~= nil
+function Core:hasComponent(instance, componentIdentifier)
+    return self._components[resolveComponentByIdentifier(componentIdentifier)][instance] ~= nil
 end
 
 function Core:components(...)
-    local componentDefs = { ... }
-    local count = #componentDefs
+    local count = select("#", ...)
+    local componentIdentifiers = { ... }
+
+    for index, componentIdentifier in ipairs(componentIdentifiers) do
+        componentIdentifiers[index] = resolveComponentByIdentifier(componentIdentifier)
+    end
 
     return coroutine.wrap(function()
-        local firstDefinition = componentDefs[1]
+        local firstIdentifier = componentIdentifiers[1]
         local result = { nil, nil, nil }
 
-        for instance, component in pairs(self._components[firstDefinition.tagName]) do
+        for instance, component in pairs(self._components[firstIdentifier]) do
             debug.profilebegin("Core:components iterator")
             result[1] = instance
             result[2] = component
@@ -123,8 +175,8 @@ function Core:components(...)
             local hasAllComponents = true
 
             for i = 2, count do
-                local definition = componentDefs[i]
-                local otherComponent = self._components[definition.tagName][instance]
+                local otherIdentifier = componentIdentifiers[i]
+                local otherComponent = self._components[otherIdentifier][instance]
                 if otherComponent ~= nil then
                     result[i + 1] = otherComponent
                 else
@@ -146,7 +198,7 @@ function Core:registerSingletonComponent(componentDefinition)
         error(("Core has already registered a singleton component with name %s"):format(componentDefinition.tagName), 2)
     end
 
-    local singleton = componentDefinition:_create()
+    local singleton = componentDefinition._create()
     self._singletonComponents[componentDefinition.tagName] = singleton
 
     for _, plugin in ipairs(self._plugins) do
@@ -156,8 +208,8 @@ function Core:registerSingletonComponent(componentDefinition)
     end
 end
 
-function Core:getSingletonComponent(componentDefinition)
-    local component = self._singletonComponents[componentDefinition.tagName]
+function Core:getSingletonComponent(componentIdentifier)
+    local component = self._singletonComponents[resolveComponentByIdentifier(componentIdentifier)]
     return component
 end
 
@@ -167,8 +219,17 @@ function Core:_addComponent(instance, tagName)
     end
 
     local componentDefinition = self._componentDefs[tagName]
-    local component = componentDefinition:_create(instance)
+    local component = componentDefinition._create(instance)
     self._components[tagName][instance] = component
+
+    if componentDefinition.added then
+        componentDefinition.added(component, instance)
+    end
+
+    if self._componentAddedSignals[tagName] ~= nil then
+        self._componentAddedSignals[tagName]:Fire(component, instance)
+    end
+
     return component
 end
 
@@ -176,6 +237,19 @@ function Core:_removeComponent(instance, tagName)
     if self._components[tagName][instance] == nil then
         return
     end
+
+    local componentDefinition = self._componentDefs[tagName]
+    local component = self._components[tagName][instance]
+
+    if self._componentRemovingSignals[tagName] ~= nil then
+        self._componentRemovingSignals[tagName]:Fire(component, instance)
+    end
+
+    if componentDefinition.removing then
+        componentDefinition.removing(component, instance)
+    end
+
+    component.maid:clean()
 
     self._components[tagName][instance] = nil
 end
