@@ -149,7 +149,7 @@ function Core:registerComponent(componentDefinition)
 
     for _, plugin in ipairs(self._plugins) do
         if plugin.componentRegistered then
-            plugin.componentRegistered(componentDefinition)
+            plugin.componentRegistered(self, componentDefinition)
         end
     end
 end
