@@ -11,7 +11,36 @@ local EventStepper = require(script.Parent.EventStepper)
 local TimeStepper = require(script.Parent.TimeStepper)
 local createCleaner = require(script.Parent.createCleaner)
 local createSignal = require(script.Parent.createSignal)
-local System = require(script.Parent.System)
+
+--[[
+    Resolves a tag name from a "component identifier", which may be either a
+    tag name or a Component itself. Cores use tag names to identify components.
+]]
+local function resolveComponentByIdentifier(componentIdentifier)
+    if typeof(componentIdentifier) == "string" then
+        return componentIdentifier
+    elseif typeof(componentIdentifier) == "table" then
+        return componentIdentifier.tagName
+    else
+        error(
+            ("Component identifier %q of type %s is not usable"):format(
+                tostring(componentIdentifier),
+                typeof(componentIdentifier)),
+            0)
+    end
+end
+
+local function getComponentSignal(componentIdentifier, eventCache)
+    local tagName = resolveComponentByIdentifier(componentIdentifier)
+
+    local signal = eventCache[tagName]
+    if signal == nil then
+        signal = createSignal()
+        eventCache[tagName] = signal
+    end
+
+    return signal
+end
 
 local Core = {}
 Core.__index = Core
@@ -21,6 +50,7 @@ function Core.new(args)
     local plugins = args.plugins or {}
 
     local self = setmetatable({
+        args = args,
         cleaner = createCleaner(),
         _steppers = {},
         _systems = {},
@@ -81,34 +111,12 @@ function Core:start()
     end
 end
 
-local function resolveComponentByIdentifier(componentIdentifier)
-    if typeof(componentIdentifier) == "string" then
-        return componentIdentifier
-    elseif typeof(componentIdentifier) == "table" then
-        return componentIdentifier.tagName
-    else
-        error(("Component identifier %q of type %s is not usable"):format(tostring(componentIdentifier), typeof(componentIdentifier)), 0)
-    end
-end
-
-function Core:_getComponentSignal(componentIdentifier, eventCache)
-    local tagName = resolveComponentByIdentifier(componentIdentifier)
-
-    local signal = eventCache[tagName]
-    if signal == nil then
-        signal = createSignal()
-        eventCache[tagName] = signal
-    end
-
-    return signal
-end
-
 function Core:getComponentAddedSignal(componentIdentifier)
-    return self:_getComponentSignal(componentIdentifier, self._componentAddedSignals)
+    return getComponentSignal(componentIdentifier, self._componentAddedSignals)
 end
 
 function Core:getComponentRemovingSignal(componentIdentifier)
-    return self:_getComponentSignal(componentIdentifier, self._componentRemovingSignals)
+    return getComponentSignal(componentIdentifier, self._componentRemovingSignals)
 end
 
 function Core:_initiateComponent(componentDefinition)
@@ -157,17 +165,17 @@ end
 
 function Core:components(...)
     local count = select("#", ...)
-    local componentIdentifiers = { ... }
+    local tagNames = {}
 
-    for index, componentIdentifier in ipairs(componentIdentifiers) do
-        componentIdentifiers[index] = resolveComponentByIdentifier(componentIdentifier)
+    for i = 1, count do
+        tagNames[i] = resolveComponentByIdentifier(select(i, ...))
     end
 
     return coroutine.wrap(function()
-        local firstIdentifier = componentIdentifiers[1]
+        local firstName = tagNames[1]
         local result = { nil, nil, nil }
 
-        for instance, component in pairs(self._components[firstIdentifier]) do
+        for instance, component in pairs(self._components[firstName]) do
             debug.profilebegin("Core:components iterator")
             result[1] = instance
             result[2] = component
@@ -175,8 +183,8 @@ function Core:components(...)
             local hasAllComponents = true
 
             for i = 2, count do
-                local otherIdentifier = componentIdentifiers[i]
-                local otherComponent = self._components[otherIdentifier][instance]
+                local otherName = tagNames[i]
+                local otherComponent = self._components[otherName][instance]
                 if otherComponent ~= nil then
                     result[i + 1] = otherComponent
                 else
