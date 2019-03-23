@@ -4,11 +4,16 @@ local RECS = require(ReplicatedStorage.RECS)
 
 local core = RECS.Core.new()
 
-local TestComponent = RECS.defineComponent("Test", {
-    a = 1,
-    b = true,
-    c = "test"
-})
+local TestComponent = RECS.defineComponent("Test", function()
+    return {
+        a = 1,
+        b = true,
+        c = "test",
+        tab = {
+            a = 1,
+        },
+    }
+end)
 
 local TestSystem = RECS.System:extend("TestSystem")
 

@@ -1,6 +1,6 @@
 --[[
 
-todo lol
+defineComponent is a utility function for defining a component.
 
 ]]
 
@@ -8,10 +8,11 @@ local createCleaner = require(script.Parent.createCleaner)
 
 local errorFormats = {
     nonStringName = "tagName (1) must be a string, is a %s",
-    nonTableDefaultProps = "defaultProps (2) must be a table or nil, is a %s",
+    nonFunctionDefaultProps = "defaultProps (2) must be a function or nil, is a %s",
+    nonTableDefaultPropsReturn = "The defaultProps generator for the %s component must return a table, but returned a %s",
     nonModuleScriptPropOverride = "Component property override module %s must be a ModuleScript, is a %s",
     nonTableRootPropOverride = "Component property override module %s must return a table, returned a %s",
-    nonTableComponentPropOverride = "Component property override entry %s from module %s must return a table, returned a %s",
+    nonTableComponentPropOverride = "Component property override entry %s from module %s must return a table, but returned a %s",
     overrideNonexistentKey = "Component property override module %s is trying to override %s.%s, which does not exist in the %s component.",
 }
 
@@ -21,18 +22,21 @@ local function defineComponent(tagName, defaultProps)
         errorFormats.nonStringName:format(typeof(tagName)))
 
     assert(
-        defaultProps == nil or typeof(defaultProps) == "table",
-        errorFormats.nonTableDefaultProps:format(typeof(defaultProps)))
+        defaultProps == nil or typeof(defaultProps) == "function",
+        errorFormats.nonFunctionDefaultProps:format(typeof(defaultProps)))
 
     local definition = {}
     definition.tagName = tagName
-    definition.defaultProps = defaultProps or {}
 
     function definition._create(instance)
-        local component = {}
-
-        for key, value in pairs(definition.defaultProps) do
-            component[key] = value
+        local component
+        if definition.defaultProps then
+            component = definition.defaultProps()
+            assert(
+                typeof(component) == "table",
+                errorFormats.nonTableDefaultPropsReturn:format(tagName, typeof(component)))
+        else
+            component = {}
         end
 
         component.tagName = tagName
