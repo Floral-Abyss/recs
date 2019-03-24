@@ -13,7 +13,6 @@ local errorFormats = {
     nonModuleScriptPropOverride = "Component property override module %s must be a ModuleScript, is a %s",
     nonTableRootPropOverride = "Component property override module %s must return a table, returned a %s",
     nonTableComponentPropOverride = "Component property override entry %s from module %s must return a table, but returned a %s",
-    overrideNonexistentKey = "Component property override module %s is trying to override %s.%s, which does not exist in the %s component.",
 }
 
 local function defineComponent(tagName, defaultProps)
@@ -61,10 +60,6 @@ local function defineComponent(tagName, defaultProps)
 
             if specificComponentProps ~= nil then
                 for overrideKey, overrideValue in pairs(specificComponentProps) do
-                    assert(
-                        definition.defaultProps[overrideKey] ~= nil,
-                        errorFormats.overrideNonexistentKey:format(fullName, tagName, overrideKey, tagName))
-
                     component[overrideKey] = overrideValue
                 end
             end
