@@ -9,7 +9,7 @@ local createCleaner = require(script.Parent.createCleaner)
 local errorFormats = {
     nonStringName = "tagName (1) must be a string, is a %s",
     nonFunctionDefaultProps = "defaultProps (2) must be a function or nil, is a %s",
-    nonTableDefaultPropsReturn = "The defaultProps generator for the %s component must return a table, but returned a %s",
+    nonFunctionDefaultPropsReturn = "The defaultProps generator for the %s component must return a function, but returned a %s",
     nonModuleScriptPropOverride = "Component property override module %s must be a ModuleScript, is a %s",
     nonTableRootPropOverride = "Component property override module %s must return a table, returned a %s",
     nonTableComponentPropOverride = "Component property override entry %s from module %s must return a table, but returned a %s",
@@ -29,16 +29,14 @@ local function defineComponent(tagName, defaultProps)
     definition.tagName = tagName
 
     function definition._create(instance)
-        local component
-        if definition.defaultProps then
-            component = definition.defaultProps()
+        local component = {}
+        if defaultProps then
+            component = defaultProps()
+            print(defaultProps, defaultProps(), type(component) == "table")
             assert(
-                typeof(component) == "table",
-                errorFormats.nonTableDefaultPropsReturn:format(tagName, typeof(component)))
-        else
-            component = {}
+                type(component) == "table",
+                errorFormats.nonFunctionDefaultPropsReturn:format(tagName, type(component)))
         end
-
         component.tagName = tagName
         component.instance = instance
         component.maid = createCleaner()
@@ -52,10 +50,11 @@ local function defineComponent(tagName, defaultProps)
 
             local componentProps = require(componentPropsModule)
             assert(
-                typeof(componentProps) == "table",
-                errorFormats.nonTableRootPropOverride:format(fullName, typeof(componentProps)))
+                typeof(componentProps) == "function",
+                errorFormats.nonFunctionDefaultPropsReturn:format(fullName, typeof(componentProps)))
 
-            local specificComponentProps = componentProps[tagName]
+            local componentPropsOverride = componentProps()
+            local specificComponentProps = componentPropsOverride[tagName]
             assert(
                 specificComponentProps == nil or typeof(specificComponentProps) == "table",
                 errorFormats.nonTableComponentPropOverride:format(tagName, fullName, typeof(specificComponentProps)))
