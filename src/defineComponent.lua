@@ -11,8 +11,8 @@ local errorFormats = {
     nonFunctionDefaultProps = "defaultProps (2) must be a function or nil, is a %s",
     nonFunctionDefaultPropsReturn = "The defaultProps generator for the %s component must return a function, but returned a %s",
     nonModuleScriptPropOverride = "Component property override module %s must be a ModuleScript, is a %s",
-    nonTableRootPropOverride = "Component property override module %s must return a table, returned a %s",
-    nonTableComponentPropOverride = "Component property override entry %s from module %s must return a table, but returned a %s",
+    nonFunctionRootPropOverride = "Component property override module %s must return a function, returned a %s",
+    nonTableComponentPropOverride = "Component property override entry %s from module %s must be a table, but is a %s",
 }
 
 local function defineComponent(tagName, defaultProps)
@@ -31,7 +31,6 @@ local function defineComponent(tagName, defaultProps)
         local component = {}
         if defaultProps then
             component = defaultProps()
-            print(defaultProps, defaultProps(), type(component) == "table")
             assert(
                 type(component) == "table",
                 errorFormats.nonFunctionDefaultPropsReturn:format(tagName, type(component)))
@@ -50,7 +49,7 @@ local function defineComponent(tagName, defaultProps)
             local componentProps = require(componentPropsModule)
             assert(
                 typeof(componentProps) == "function",
-                errorFormats.nonFunctionDefaultPropsReturn:format(fullName, typeof(componentProps)))
+                errorFormats.nonFunctionRootPropOverride:format(fullName, typeof(componentProps)))
 
             local componentPropsOverride = componentProps()
             local specificComponentProps = componentPropsOverride[tagName]
