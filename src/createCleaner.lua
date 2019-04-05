@@ -1,35 +1,66 @@
+local errorMessages = {
+    cannotDestroy = "Cleaner cannot destroy %q of type %s (key %q)",
+    overridingKey = "Cannot override built-in method %s",
+}
+
 local cleanerMethods = {}
 
+local function hasFunction(table, key)
+    return table[key] ~= nil and typeof(key) == "function"
+end
+
 local function canDestroy(value)
-    if typeof(key) == "function" then
+    if typeof(value) == "function" then
         return true
-    elseif typeof(key) == "Instance" then
+    elseif typeof(value) == "Instance" then
         return true
-    elseif typeof(key) == "RBXScriptConnection" then
+    elseif typeof(value) == "RBXScriptConnection" then
         return true
-    elseif typeof(key) == "table" and getmetatable(value).__index == cleanerMethods then
+    elseif typeof(value) == "table" and getmetatable(value).__index == cleanerMethods then
         return true
+    elseif typeof(value) == "table" then
+        return hasFunction(value, "destroy")
+            or hasFunction(value, "Destroy")
+            or hasFunction(value, "disconnect")
+            or hasFunction(value, "Disconnect")
     end
 
     return false
 end
 
 cleanerMethods.give = function(self, key, value)
-    local values = getmetatable(self).__values
-    values[key] = value
+    assert(cleanerMethods[key] == nil, errorMessages.overridingKey:format(tostring(key)))
+
+    if value ~= nil then
+        assert(canDestroy(value), errorMessages.cannotDestroy:format(tostring(value), typeof(value), tostring(key)))
+    end
+
+    rawset(self, key, value)
 end
 
 cleanerMethods.clean = function(self)
     for key, value in pairs(self) do
-        if typeof(key) == "function" then
+        if typeof(value) == "function" then
             value()
-        elseif typeof(key) == "Instance" then
+        elseif typeof(value) == "Instance" then
             value:Destroy()
-        elseif typeof(key) == "RBXScriptConnection" then
+        elseif typeof(value) == "RBXScriptConnection" then
             value:Disconnect()
-        elseif typeof(key) == "table" and getmetatable(self).__index == cleanerMethods then
+        elseif typeof(value) == "table" and getmetatable(value).__index == cleanerMethods then
             value:clean()
+        elseif typeof(value) == "table" then
+            if value.destroy ~= nil then
+                value.destroy()
+            elseif value.Destroy ~= nil then
+                value.Destroy()
+            elseif value.disconnect ~= nil then
+                value.disconnect()
+            elseif value.Disconnect ~= nil then
+                value.Disconnect()
+            end
         end
+
+        rawset(self, key, nil)
     end
 end
 
@@ -37,7 +68,6 @@ local function createCleaner()
     local cleaner = {}
 
     setmetatable(cleaner, {
-        __values = {},
         __index = cleanerMethods,
         __newindex = cleanerMethods.give,
     })
