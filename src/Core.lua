@@ -154,6 +154,16 @@ function Core:registerComponent(componentDefinition)
     end
 end
 
+function Core:registerComponentsFromFolder(folder)
+    for _, instance in ipairs(folder:GetChildren()) do
+        if instance:IsA("ModuleScript") then
+            self:registerComponent(require(instance))
+        elseif instance:IsA("Folder") then
+            self:registerComponentsFromFolder(instance)
+        end
+    end
+end
+
 function Core:getComponent(instance, componentIdentifier)
     local component = self._components[resolveComponentByIdentifier(componentIdentifier)][instance]
     return component
