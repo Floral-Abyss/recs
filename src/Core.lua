@@ -155,7 +155,7 @@ function Core:registerComponent(componentDefinition)
 end
 
 function Core:registerComponentsFromFolder(folder)
-    for _, instance in pairs(folder:GetChildren()) do
+    for _, instance in ipairs(folder:GetChildren()) do
         if instance:IsA("ModuleScript") then
             self:registerComponent(require(instance))
         elseif instance:IsA("Folder") then
