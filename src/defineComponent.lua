@@ -11,9 +11,8 @@ local errorFormats = {
     nonFunctionDefaultProps = "defaultProps (2) must be a function or nil, is a %s",
     nonTableDefaultPropsReturn = "The defaultProps generator for the %s component must return a table, but returned a %s",
     nonModuleScriptPropOverride = "Component property override module %s must be a ModuleScript, is a %s",
-    nonTableRootPropOverride = "Component property override module %s must return a table, returned a %s",
-    nonTableComponentPropOverride = "Component property override entry %s from module %s must return a table, but returned a %s",
-    overrideNonexistentKey = "Component property override module %s is trying to override %s.%s, which does not exist in the %s component.",
+    nonFunctionRootPropOverride = "Component property override module %s must return a function, returned a %s",
+    nonTableComponentPropOverride = "Component property override entry %s from module %s must be a table, but is a %s",
 }
 
 local function defineComponent(tagName, defaultProps)
@@ -27,16 +26,16 @@ local function defineComponent(tagName, defaultProps)
 
     local definition = {}
     definition.tagName = tagName
+    definition.defaultProps = defaultProps
 
     function definition._create(instance)
-        local component
+        local component = {}
         if definition.defaultProps then
             component = definition.defaultProps()
+
             assert(
                 typeof(component) == "table",
                 errorFormats.nonTableDefaultPropsReturn:format(tagName, typeof(component)))
-        else
-            component = {}
         end
 
         component.tagName = tagName
@@ -50,11 +49,12 @@ local function defineComponent(tagName, defaultProps)
                 componentPropsModule:IsA("ModuleScript"),
                 errorFormats.nonModuleScriptPropOverride:format(fullName, componentPropsModule.ClassName))
 
-            local componentProps = require(componentPropsModule)
+            local componentPropsGenerator = require(componentPropsModule)
             assert(
-                typeof(componentProps) == "table",
-                errorFormats.nonTableRootPropOverride:format(fullName, typeof(componentProps)))
+                typeof(componentPropsGenerator) == "function",
+                errorFormats.nonFunctionRootPropOverride:format(fullName, typeof(componentPropsGenerator)))
 
+            local componentProps = componentPropsGenerator()
             local specificComponentProps = componentProps[tagName]
             assert(
                 specificComponentProps == nil or typeof(specificComponentProps) == "table",
@@ -62,10 +62,6 @@ local function defineComponent(tagName, defaultProps)
 
             if specificComponentProps ~= nil then
                 for overrideKey, overrideValue in pairs(specificComponentProps) do
-                    assert(
-                        definition.defaultProps[overrideKey] ~= nil,
-                        errorFormats.overrideNonexistentKey:format(fullName, tagName, overrideKey, tagName))
-
                     component[overrideKey] = overrideValue
                 end
             end
