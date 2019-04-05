@@ -16,7 +16,10 @@ local function canDestroy(value)
         return true
     elseif typeof(value) == "RBXScriptConnection" then
         return true
-    elseif typeof(value) == "table" and getmetatable(value).__index == cleanerMethods then
+    elseif typeof(value) == "table"
+        and getmetatable(value) ~= nil
+        and getmetatable(value).__index == cleanerMethods then
+
         return true
     elseif typeof(value) == "table" then
         return hasFunction(value, "destroy")
