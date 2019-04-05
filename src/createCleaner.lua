@@ -6,7 +6,7 @@ local errorMessages = {
 local cleanerMethods = {}
 
 local function hasFunction(table, key)
-    return table[key] ~= nil and typeof(key) == "function"
+    return table[key] ~= nil and typeof(table[key]) == "function"
 end
 
 local function canDestroy(value)
@@ -49,7 +49,10 @@ cleanerMethods.clean = function(self)
             value:Destroy()
         elseif typeof(value) == "RBXScriptConnection" then
             value:Disconnect()
-        elseif typeof(value) == "table" and getmetatable(value).__index == cleanerMethods then
+        elseif typeof(value) == "table"
+            and getmetatable(value) ~= nil
+            and getmetatable(value).__index == cleanerMethods then
+
             value:clean()
         elseif typeof(value) == "table" then
             if value.destroy ~= nil then
