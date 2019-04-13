@@ -2,6 +2,7 @@ local function createSignal()
     local listeners = {}
     local signal = {}
 
+    -- luacheck: push ignore 212
     function signal:Connect(listener)
         listeners[listener] = true
 
@@ -24,6 +25,7 @@ local function createSignal()
             coroutine.wrap(listener)(...)
         end
     end
+    -- luacheck: pop
     signal.fire = signal.Fire
 
     return signal
