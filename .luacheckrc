@@ -679,7 +679,10 @@ stds.plugin = {
 	}
 }
 
-ignore = {}
+ignore = {
+    "212", -- unused argument
+    "213", -- unused loop variable
+}
 
 std = "lua51+roblox"
 
