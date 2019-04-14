@@ -13,8 +13,11 @@
     },
     "ReplicatedStorage": {
       "$className": "ReplicatedStorage",
+      "Packages": {
+        "$path": "packages",
       "RECS": {
         "$path": "src"
+      }
       }
     },
     "ServerScriptService": {
