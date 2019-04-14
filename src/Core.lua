@@ -1,275 +1,243 @@
 --[[
 
-A RECS Core is the root of a RECS setup. It contains systems, entities, and
-component registrations, and is responsible for managing all of these.
+    A RECS Core is the root of a RECS setup. It contains systems, entities, and
+    component registrations, and is responsible for managing all of these.
+
+    Many Core methods operate on the concept of a "component identifier", which
+    can be two different things, for ease of use. A component identifier is
+    either a component class itself or the name of one.
 
 ]]
 
-local CollectionService = game:GetService("CollectionService")
+local HttpService = game:GetService("HttpService")
 
 local EventStepper = require(script.Parent.EventStepper)
 local TimeStepper = require(script.Parent.TimeStepper)
-local createCleaner = require(script.Parent.createCleaner)
 local createSignal = require(script.Parent.createSignal)
 
+local errorMessages = {
+    invalidIdentifier = "%q, a %s, is not a valid identifier for a component class",
+    componentNotRegistered = "The component %q is not registered in this Core",
+    componentClassAlreadyRegistered = "The component class %q is already registered in this Core",
+    singletonAlreadyAdded = "A singleton component for class %q is already added to this Core",
+    singletonNotPresent = "The singleton component for class %q does not exist in this Core"
+}
+
 --[[
-    Resolves a tag name from a "component identifier", which may be either a
-    tag name or a Component itself. Cores use tag names to identify components.
+
+    Resolves a class name from a "component identifier", which may be either a
+    class name or a component definition. Cores use class names to index
+    components internally.
+
 ]]
 local function resolveComponentByIdentifier(componentIdentifier)
     if typeof(componentIdentifier) == "string" then
         return componentIdentifier
     elseif typeof(componentIdentifier) == "table" then
-        return componentIdentifier.tagName
+        -- Assume it's a component class for efficiency / zoomies
+        return componentIdentifier.name
     else
-        error(
-            ("Component identifier %q of type %s is not usable"):format(
-                tostring(componentIdentifier),
-                typeof(componentIdentifier)),
-            0)
+        error(errorMessages.invalidIdentifier:format(
+            tostring(componentIdentifier),
+            typeof(componentIdentifier)),
+        3)
     end
-end
-
-local function getComponentSignal(componentIdentifier, eventCache)
-    local tagName = resolveComponentByIdentifier(componentIdentifier)
-
-    local signal = eventCache[tagName]
-    if signal == nil then
-        signal = createSignal()
-        eventCache[tagName] = signal
-    end
-
-    return signal
 end
 
 local Core = {}
 Core.__index = Core
 
-function Core.new(args)
-    args = args or {}
-    local plugins = args.plugins or {}
-
+function Core.new()
     local self = setmetatable({
-        args = args,
-        cleaner = createCleaner(),
-        _steppers = {},
-        _systems = {},
         _components = {},
-        _componentDefs = {},
-        _componentAddedSignals = {},
-        _componentRemovingSignals = {},
-        _singletonComponents = {},
-        _plugins = plugins,
+        _componentClasses = {},
+        _singletons = {},
     }, Core)
-
-    for _, plugin in ipairs(plugins) do
-        if plugin.coreInit then
-            plugin.coreInit(self)
-        end
-    end
 
     return self
 end
 
-function Core:registerSystems(systemRegistration)
-    local steppers = {}
+--[[
 
-    for _, stepperDefinition in ipairs(systemRegistration) do
-        local systemInstances = {}
+    Registers a component class with the core. This method will throw if a
+    component class with the same name has already been registered.
 
-        for _, class in ipairs(stepperDefinition.systemClasses) do
-            local systemInstance = class._create(self)
-            table.insert(self._systems, systemInstance)
-            table.insert(systemInstances, systemInstance)
-        end
+]]
+function Core:registerComponent(componentClass)
+    if self._componentClasses[componentClass.name] ~= nil then
+        error(errorMessages.componentClassAlreadyRegistered:format(
+            componentClass.name
+        ), 2)
+    end
 
-        if stepperDefinition.type == "event" then
-            table.insert(steppers, EventStepper.new(stepperDefinition.event, systemInstances))
-        elseif stepperDefinition.type == "interval" then
-            table.insert(steppers, TimeStepper.new(stepperDefinition.interval, systemInstances))
+    self._componentClasses[componentClass.name] = componentClass
+    self._components[componentClass.name] = {}
+end
+
+--[[
+
+    Creates a new entity and returns an identifier for the entity that can be
+    used in calls to other Core methods.
+
+    Do not rely upon any details of the return type. The only guarantee RECS
+    makes about the return value of this function is that it is serializable
+    as-is.
+
+]]
+function Core:createEntity()
+    -- The core is using a hash map for storing component records.
+    -- HttpService::GenerateGUID may be too slow for use, and can be replaced
+    -- later if need be.
+    return HttpService:GenerateGUID(true)
+end
+
+--[[
+
+    Given an entity ID, destroys the entity, removing all components from it.
+    This method will do nothing if the entity ID is invalid, was not part of
+    this core, or was destroyed already.
+
+]]
+function Core:destroyEntity(entityId)
+    -- TODO: Tell systems the components are being destroyed to let them clean up stuff?
+    for componentClassName, componentInstances in pairs(self._components) do
+        componentInstances[entityId] = nil
+    end
+end
+
+--[[
+
+    Given an entity ID and a component identifier, returns the component
+    attached to the entity, or nil.
+
+    Throws if the identified component class isn't registered in the core.
+
+]]
+function Core:getComponent(entityId, componentIdentifier)
+    componentIdentifier = resolveComponentByIdentifier(componentIdentifier)
+    local componentInstances = self._components[componentIdentifier]
+
+    if componentInstances ~= nil then
+        return componentInstances[entityId]
+    else
+        error(errorMessages.componentNotRegistered:format(componentIdentifier), 2)
+    end
+end
+
+--[[
+
+    Given an entity ID and a component identifier, returns a boolean indicating
+    whether the entity has an instance of the component attached to it.
+
+    Throws if the identified component class isn't registered in the core.
+
+]]
+function Core:hasComponent(entityId, componentIdentifier)
+    -- We could implement this in terms of getComponent but then the stack level
+    -- for getComponent's error message would be wrong - it would point at this
+    -- component, not the caller of hasComponent. Thus, hasComponent is built
+    -- from the ground up here.
+    local componentInstances = self._components[componentIdentifier]
+
+    if componentInstances ~= nil then
+        return componentInstances[entityId] ~= nil
+    else
+        error(errorMessages.componentNotRegistered:format(componentIdentifier), 2)
+    end
+end
+
+--[[
+
+    Given an entity ID and a component identifier, adds a new instance of the
+    component to the entity. Returns a boolean that is true if the component
+    was added, and false if it already existed on the entity, followed by the
+    added component.
+
+    Throws if the identified component class isn't registered in the core.
+
+]]
+function Core:addComponent(entityId, componentIdentifier)
+    componentIdentifier = resolveComponentByIdentifier(componentIdentifier)
+    local componentClass = self._componentClasses[componentIdentifier]
+
+    if componentClass ~= nil then
+        local componentInstances = self._components[componentIdentifier]
+        local componentInstance = componentInstances[entityId]
+
+        if componentInstance ~= nil then
+            -- Don't re-create the component or overwrite what's already there!
+            return false, componentInstance
         else
-            error(("Unknown stepper definition kind %s"):format(stepperDefinition.type), 0)
+            componentInstance = componentClass._create()
+            componentInstances[entityId] = componentInstance
         end
-    end
 
-    self._steppers = steppers
-end
-
-function Core:start()
-    for _, system in ipairs(self._systems) do
-        if system.init then
-            system:init()
-        end
-    end
-
-    for _, componentDefinition in pairs(self._componentDefs) do
-        self:_initiateComponent(componentDefinition)
-    end
-
-    for _, stepper in ipairs(self._steppers) do
-        stepper:start()
+        return true, componentInstance
+    else
+        error(errorMessages.componentNotRegistered:format(componentIdentifier), 2)
     end
 end
 
-function Core:getComponentAddedSignal(componentIdentifier)
-    return getComponentSignal(componentIdentifier, self._componentAddedSignals)
-end
+--[[
 
-function Core:getComponentRemovingSignal(componentIdentifier)
-    return getComponentSignal(componentIdentifier, self._componentRemovingSignals)
-end
+    Given an entity ID and a component identifier, removes the component
+    instance from the entity. Returns true plus the removed component if there
+    was a component instance attached to the entity, or false if there wasn't.
 
-function Core:_initiateComponent(componentDefinition)
-    local tagName = componentDefinition.tagName
-    local addedSignal = CollectionService:GetInstanceAddedSignal(tagName)
-    local removedSignal = CollectionService:GetInstanceRemovedSignal(tagName)
+    Throws if the identified component class isn't registered in the core.
 
-    for _, instance in ipairs(CollectionService:GetTagged(tagName)) do
-        self:_addComponent(instance, tagName)
-    end
+]]
+function Core:removeComponent(entityId, componentIdentifier)
+    componentIdentifier = resolveComponentByIdentifier(componentIdentifier)
+    local componentInstances = self._components[componentIdentifier]
 
-    self.cleaner["componentTagAdded." .. tagName] = addedSignal:Connect(function(instance)
-        self:_addComponent(instance, tagName)
-    end)
-
-    self.cleaner["componentTagRemoved." .. tagName] = removedSignal:Connect(function(instance)
-        self:_removeComponent(instance, tagName)
-    end)
-end
-
-function Core:registerComponent(componentDefinition)
-    local tagName = componentDefinition.tagName
-
-    if self._componentDefs[tagName] then
-        error(("Core has already registered a component with name %s"):format(tagName), 2)
-    end
-
-    self._componentDefs[tagName] = componentDefinition
-    self._components[tagName] = {}
-
-    for _, plugin in ipairs(self._plugins) do
-        if plugin.componentRegistered then
-            plugin.componentRegistered(self, componentDefinition)
-        end
+    if componentInstances ~= nil then
+        local component = componentInstances[entityId]
+        componentInstances[entityId] = nil
+        -- We don't have to branch on component ~= nil because of this!
+        return component ~= nil, component
+    else
+        error(errorMessages.componentNotRegistered:format(componentIdentifier), 2)
     end
 end
 
-function Core:registerComponentsFromFolder(folder)
-    for _, instance in ipairs(folder:GetChildren()) do
-        if instance:IsA("ModuleScript") then
-            self:registerComponent(require(instance))
-        elseif instance:IsA("Folder") then
-            self:registerComponentsFromFolder(instance)
-        end
+--[[
+
+    Adds a singleton component to the core. Returns the component instance.
+
+    Throws if the singleton component already exists on the core.
+
+]]
+function Core:addSingleton(componentClass)
+    local singletonIdentifier = componentClass.name
+
+    if self._singletons[singletonIdentifier] == nil then
+        local singleton = componentClass._create()
+        self._singletons[singletonIdentifier] = singleton
+        return singleton
+    else
+        error(errorMessages.singletonAlreadyAdded:format(singletonIdentifier), 2)
     end
 end
 
-function Core:getComponent(instance, componentIdentifier)
-    local component = self._components[resolveComponentByIdentifier(componentIdentifier)][instance]
-    return component
-end
+--[[
 
-function Core:hasComponent(instance, componentIdentifier)
-    return self._components[resolveComponentByIdentifier(componentIdentifier)][instance] ~= nil
-end
+    Given a component identifier, returns the singleton component attached to
+    this core.
 
-function Core:components(...)
-    local count = select("#", ...)
-    local tagNames = {}
+    Throws if the singleton doesn't exist on the core.
 
-    for i = 1, count do
-        tagNames[i] = resolveComponentByIdentifier(select(i, ...))
+]]
+function Core:getSingleton(componentIdentifier)
+    componentIdentifier = resolveComponentByIdentifier(componentIdentifier)
+
+    local singleton = self._singletons[componentIdentifier]
+
+    if singleton == nil then
+        error(errorMessages.singletonNotPresent:format(componentIdentifier), 2)
     end
 
-    return coroutine.wrap(function()
-        local firstName = tagNames[1]
-        local result = { nil, nil, nil }
-
-        for instance, component in pairs(self._components[firstName]) do
-            debug.profilebegin("Core:components iterator")
-            result[1] = instance
-            result[2] = component
-
-            local hasAllComponents = true
-
-            for i = 2, count do
-                local otherName = tagNames[i]
-                local otherComponent = self._components[otherName][instance]
-                if otherComponent ~= nil then
-                    result[i + 1] = otherComponent
-                else
-                    hasAllComponents = false
-                    break
-                end
-            end
-            debug.profileend()
-
-            if hasAllComponents then
-                coroutine.yield(unpack(result))
-            end
-        end
-    end)
-end
-
-function Core:registerSingletonComponent(componentDefinition)
-    if self._singletonComponents[componentDefinition.tagName] then
-        error(("Core has already registered a singleton component with name %s"):format(componentDefinition.tagName), 2)
-    end
-
-    local singleton = componentDefinition._create()
-    self._singletonComponents[componentDefinition.tagName] = singleton
-
-    for _, plugin in ipairs(self._plugins) do
-        if plugin.singletonRegistered then
-            plugin.singletonRegistered(singleton)
-        end
-    end
-end
-
-function Core:getSingletonComponent(componentIdentifier)
-    local component = self._singletonComponents[resolveComponentByIdentifier(componentIdentifier)]
-    return component
-end
-
-function Core:_addComponent(instance, tagName)
-    if self._components[tagName][instance] ~= nil then
-        return
-    end
-
-    local componentDefinition = self._componentDefs[tagName]
-    local component = componentDefinition._create(instance)
-    self._components[tagName][instance] = component
-
-    if componentDefinition.added then
-        componentDefinition.added(component, instance)
-    end
-
-    if self._componentAddedSignals[tagName] ~= nil then
-        self._componentAddedSignals[tagName]:Fire(component, instance)
-    end
-
-    return component
-end
-
-function Core:_removeComponent(instance, tagName)
-    if self._components[tagName][instance] == nil then
-        return
-    end
-
-    local componentDefinition = self._componentDefs[tagName]
-    local component = self._components[tagName][instance]
-
-    if self._componentRemovingSignals[tagName] ~= nil then
-        self._componentRemovingSignals[tagName]:Fire(component, instance)
-    end
-
-    if componentDefinition.removing then
-        componentDefinition.removing(component, instance)
-    end
-
-    component.maid:clean()
-
-    self._components[tagName][instance] = nil
+    return singleton
 end
 
 return Core

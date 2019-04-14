@@ -15,15 +15,18 @@
       "$className": "ReplicatedStorage",
       "Packages": {
         "$path": "packages",
-      "RECS": {
-        "$path": "src"
-      }
+        "RECS": {
+          "$path": "src"
+        }
       }
     },
     "ServerScriptService": {
       "$className": "ServerScriptService",
-      "RECSTest": {
+      "RECSExample": {
         "$path": "example"
+      },
+      "RECSTests": {
+        "$path": "tests"
       }
     }
   }
