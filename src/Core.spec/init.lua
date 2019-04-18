@@ -1,6 +1,7 @@
 -- luacheck: std +testez
 local Core = require(script.Parent.Core)
 local defineComponent = require(script.Parent.defineComponent)
+local System = require(script.Parent.System)
 
 return function()
     describe("new", function()
@@ -90,6 +91,35 @@ return function()
             expect(function()
                 core:getSingleton(component)
             end).to.throw()
+        end)
+    end)
+
+    describe("registerSystem", function()
+        it("should succeed when called", function()
+            local TestSystem = System:extend("TestSystem")
+            local core = Core.new()
+            core:registerSystem(TestSystem)
+        end)
+
+        it("should throw when registering a system repeatedly", function()
+            local TestSystem = System:extend("TestSystem")
+            local core = Core.new()
+            core:registerSystem(TestSystem)
+
+            expect(function()
+                core:registerSystem(TestSystem)
+            end).to.throw()
+        end)
+
+        it("should not call System:init", function()
+            local TestSystem = System:extend("TestSystem")
+
+            function TestSystem:init()
+                error("System:init was called")
+            end
+
+            local core = Core.new()
+            core:registerSystem(TestSystem)
         end)
     end)
 end

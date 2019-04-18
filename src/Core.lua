@@ -20,7 +20,10 @@ local errorMessages = {
     componentNotRegistered = "The component %q is not registered in this Core",
     componentClassAlreadyRegistered = "The component class %q is already registered in this Core",
     singletonAlreadyAdded = "A singleton component for class %q is already added to this Core",
-    singletonNotPresent = "The singleton component for class %q does not exist in this Core"
+    singletonNotPresent = "The singleton component for class %q does not exist in this Core",
+    systemNotRegistered = "The system %q is not registered in this Core",
+    systemClassAlreadyRegistered = "The system class %q is already registered in this Core",
+    unknownStepperType = "Unknown stepper type %q. This is a RECS bug; please report it",
 }
 
 --[[
@@ -49,9 +52,21 @@ Core.__index = Core
 
 function Core.new()
     local self = setmetatable({
+        -- All component instances in the core. Structure:
+        -- [componentClassName] = {
+        --     [entityId] = componentInstance,
+        -- }
         _components = {},
+        -- A map of component class names to component class definitions.
         _componentClasses = {},
+        -- A map of singleton component class names to singleton component instances.
+        -- Singleton components are instances of regular component classes that
+        -- are not attached to an entity.
         _singletons = {},
+        -- A map of system class names to system instances.
+        _systems = {},
+        -- An array of all the steppers in the system.
+        _steppers = {},
     }, Core)
 
     return self
@@ -238,6 +253,135 @@ function Core:getSingleton(componentIdentifier)
     end
 
     return singleton
+end
+
+--[[
+
+    Registers a system class with the Core and creates an internal instance of
+    the system. The system's init method will not be called until Core::start is
+    called.
+
+    Throws if the system class has already been registered in the Core.
+
+]]
+function Core:registerSystem(systemClass)
+    if self._systems[systemClass.name] ~= nil then
+        error(errorMessages.systemClassAlreadyRegistered:format(systemClass.name), 2)
+    end
+
+    local system = systemClass._create(self)
+    self._systems[systemClass.name] = system
+end
+
+--[[
+
+    Given a table of system classes, registers all of them with the Core.
+
+    Throws if one of the system classes has already been registered in the Core.
+
+]]
+function Core:registerSystems(systems)
+    -- Deliberately use pairs to accept either a map or an array.
+    for _, systemClass in pairs(systems) do
+        self:registerSystem(systemClass)
+    end
+end
+
+--[[
+
+    Given an instance, traverses its children. If a child is a ModuleScript, it
+    is required and the return result is passed to registerSystem. If a child is
+    a Folder, its children are inspected using the same process. Other classes
+    are ignored.
+
+    Throws if one of the system classes has already been registered in the Core.
+
+]]
+function Core:registerSystemsInInstance(rootInstance)
+    for _, child in ipairs(rootInstance:GetChildren()) do
+        if child:IsA("ModuleScript") then
+            self:registerSystem(require(child))
+        elseif child:IsA("Folder") then
+            self:registerSystemsInInstance(child)
+        end
+    end
+end
+
+--[[
+
+    Registers a stepper definition in the Core. The same stepper definition may
+    be registered multiple times, though this is likely not intentional. This
+    method must be called after all systems being stepped have been registered.
+
+    Throws if one of the systems being stepped has not been registered yet.
+
+    Throws if given an unknown stepper type. This error indicates a RECS bug.
+
+]]
+function Core:registerStepper(stepperDefinition)
+    local systemInstances = {}
+
+    for _, class in ipairs(stepperDefinition.systemClasses) do
+        local instance = self._systems[class.name]
+
+        if instance == nil then
+            error(errorMessages.systemNotRegistered:format(class.name), 2)
+        end
+
+        table.insert(systemInstances, instance)
+    end
+
+    if stepperDefinition.type == "event" then
+        table.insert(self._steppers, EventStepper.new(stepperDefinition.event, systemInstances))
+    elseif stepperDefinition.type == "interval" then
+        table.insert(self._steppers, TimeStepper.new(stepperDefinition.interval, systemInstances))
+    else
+        error(errorMessages.unknownStepperType:format(stepperDefinition.type), 2)
+    end
+end
+
+--[[
+
+    Given a table of stepper definitions, registers all of them in the Core.
+
+    Throws if one of the systems being stepped has not been registered yet.
+
+    Throws if given an unknown stepper type. This error indicates a RECS bug.
+
+]]
+function Core:registerSteppers(steppers)
+    -- Deliberately use pairs to accept either a map or an array.
+    for _, stepperDefinition in pairs(steppers) do
+        self:registerStepper(stepperDefinition)
+    end
+end
+
+--[[
+
+    Starts the Core, calling init on all systems that possess the method and
+    starting all steppers. After calling this method, the Core and all
+    functionality represented by it will begin running your game's code.
+
+    The order in which systems are initialized and steppers are started is not
+    to be relied upon. Structure your code such that you do not depend on
+    ordering in this case.
+
+]]
+function Core:start()
+    -- TODO: Give plugins the ability to do work before systems init.
+    -- Initialize all systems first.
+    for _, system in ipairs(self._systems) do
+        -- Systems are not required to declare an init method, and a no-op one
+        -- is not provided in the default System class.
+        if system.init ~= nil then
+            system:init()
+        end
+    end
+
+    -- Now start all steppers.
+    for _, stepper in ipairs(self._steppers) do
+        stepper:start()
+    end
 end
 
 return Core
