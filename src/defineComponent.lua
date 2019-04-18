@@ -1,6 +1,15 @@
 --[[
 
-defineComponent is a utility function for defining a component.
+    defineComponent is a utility function for defining a component. Given a name
+    and a function that returns a table, it creates a component class that can
+    be registered with a Core.
+
+    The name must be a string; there are no restrictions on its value otherwise.
+    However, duplicate names are not recommended, as Cores require that all
+    components registered in them have unique names.
+
+    The creator function must return a table. The exact contents of the table
+    are up to the user; RECS imposes no restrictions on it.
 
 ]]
 
@@ -30,7 +39,6 @@ local function defineComponent(name, defaultPropsGenerator)
             error(errorFormats.nonTableDefaultPropsReturn:format(name, typeof(component)))
         end
 
-        component.name = name
         return component
     end
 

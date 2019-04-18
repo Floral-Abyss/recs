@@ -22,7 +22,6 @@ return function()
         local addedNew, component = core:addComponent(entity, ComponentClass)
         expect(addedNew).to.equal(true)
         expect(component).to.be.ok()
-        expect(component.name).to.equal("TestComponent")
     end)
 
     it("should return false plus the existing component if the component already exists", function()
