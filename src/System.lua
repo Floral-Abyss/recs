@@ -4,6 +4,14 @@ local System = {}
 System.__index = System
 System._kind = System
 
+function System.__isSystemClass(systemClass)
+    if typeof(systemClass) ~= "table" then
+        return false
+    end
+
+    return getmetatable(systemClass) == System
+end
+
 -- luacheck: ignore self
 function System:extend(systemName)
     local systemClass = setmetatable({
