@@ -31,6 +31,7 @@ local function defineComponent(name, defaultPropsGenerator)
 
     local definition = {}
     definition.name = name
+    definition.__index = definition
 
     function definition._create()
         local component = defaultPropsGenerator()
@@ -39,6 +40,7 @@ local function defineComponent(name, defaultPropsGenerator)
             error(errorFormats.nonTableDefaultPropsReturn:format(name, typeof(component)))
         end
 
+        setmetatable(component, definition)
         return component
     end
 

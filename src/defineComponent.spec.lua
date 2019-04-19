@@ -47,5 +47,23 @@ return function()
 
             expect(class._create).to.throw()
         end)
+
+        it("should set up the metatable properly", function()
+            local class = defineComponent("test", function()
+                return {
+                    a = 1,
+                    b = 2,
+                }
+            end)
+
+            function class:setA(newA)
+                self.a = newA
+            end
+
+            local component = class._create()
+            expect(component.a).to.equal(1)
+            component:setA(2)
+            expect(component.a).to.equal(2)
+        end)
     end)
 end
