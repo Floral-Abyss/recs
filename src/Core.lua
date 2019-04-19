@@ -218,6 +218,93 @@ end
 
 --[[
 
+    Given a tuple of component identifiers, returns an iterator function over
+    all the entities with a given set of components. The iterator function, when
+    called, will yield the entity ID, followed by each component in the order
+    specified. Callers should avoid adding or removing components in the set
+    the iterator is using; RECS does not guarantee that the iterator will remain
+    stable in this case.
+
+    The iterator is not ordered in any way, and you should not rely on the order
+    that the iterator returns entity IDs. Return values will be ordered, but the
+    order of iteration is undefined.
+
+    Throws if any of the identified component classes aren't registered in the Core.
+
+]]
+function Core:components(...)
+    -- Use a constant table to accumulate results in to avoid unnecessary table
+    -- allocations and resizing
+    local result = {}
+
+    local count = select("#", ...)
+    local componentMaps = {}
+
+    -- Convert the supplied identifiers to internal keys and look up the
+    -- component maps. Also perform error checking now, since it's a relatively
+    -- cheap place to do it.
+    for i = 1, count do
+        local rawIdentifier = select(i, ...)
+        local convertedIdentifier = resolveComponentByIdentifier(rawIdentifier)
+
+        local map = self._components[convertedIdentifier]
+
+        if map == nil then
+            error(errorMessages.componentNotRegistered:format(convertedIdentifier), 2)
+        end
+
+        componentMaps[i] = map
+    end
+
+    -- We iterate over this map to get entity IDs.
+    local firstMap = componentMaps[1]
+
+    -- Coroutine iterators are cool!
+    -- Wrapping the function in coroutine.wrap and outputting values with
+    -- coroutine.yield means we can write _almost_ the same code that we would
+    -- to generate a table, except it's an iterator!
+    return coroutine.wrap(function()
+        -- For now, we iterate over the first component. There is an
+        -- optimization that we can do: pick the component map with the least
+        -- number of entities in it, and iterate over that. All other maps are
+        -- indexed into using the entity ID we get from here, so iterating over
+        -- the smallest map should improve performance!
+        -- Since maps have no notion of size, we have to track it separately,
+        -- but it should be pretty easy to do this sort of bookkeeping in
+        -- addComponent and removeComponent, and it shouldn't desynchronize.
+        for entityId, firstComponent in pairs(firstMap) do
+            local entityHasAllComponents = true
+
+            result[1] = entityId
+            result[2] = firstComponent
+
+            -- We don't need to iterate over any other map because we already
+            -- have a key to look up.
+            for i = 2, count do
+                local otherMap = componentMaps[i]
+                local otherComponent = otherMap[entityId]
+
+                if otherComponent == nil then
+                    entityHasAllComponents = false
+                    -- No reason to continue looking; we already know this
+                    -- entity doesn't fit the criteria.
+                    break
+                else
+                    -- Increment i by 1, since index 1 is the entity ID.
+                    result[i + 1] = otherComponent
+                end
+            end
+
+            -- Only yield the coroutine if we have a full results table.
+            if entityHasAllComponents then
+                coroutine.yield(unpack(result))
+            end
+        end
+    end)
+end
+
+--[[
+
     Adds a singleton component to the core. Returns the component instance.
 
     Throws if the singleton component already exists on the core.
