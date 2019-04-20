@@ -67,6 +67,12 @@ function Core.new()
         _systems = {},
         -- An array of all the steppers in the system.
         _steppers = {},
+        -- A map of component class names to component added signals.
+        _componentAddedSignals = {},
+        -- A map of component class names to component removed signals.
+        _componentRemovedSignals = {},
+        -- A map of signals to raise functions.
+        _signalRaisers = {},
     }, Core)
 
     return self
@@ -79,14 +85,24 @@ end
 
 ]]
 function Core:registerComponent(componentClass)
-    if self._componentClasses[componentClass.name] ~= nil then
+    local name = componentClass.name
+
+    if self._componentClasses[name] ~= nil then
         error(errorMessages.componentClassAlreadyRegistered:format(
-            componentClass.name
+            name
         ), 2)
     end
 
-    self._componentClasses[componentClass.name] = componentClass
-    self._components[componentClass.name] = {}
+    self._componentClasses[name] = componentClass
+    self._components[name] = {}
+
+    local addedSignal, raiseAdded = createSignal()
+    local removedSignal, raiseRemoved = createSignal()
+
+    self._componentAddedSignals[name] = addedSignal
+    self._componentRemovedSignals[name] = removedSignal
+    self._signalRaisers[addedSignal] = raiseAdded
+    self._signalRaisers[removedSignal] = raiseRemoved
 end
 
 --[[
@@ -185,6 +201,9 @@ function Core:addComponent(entityId, componentIdentifier)
         else
             componentInstance = componentClass._create()
             componentInstances[entityId] = componentInstance
+
+            local signal = self._componentAddedSignals[componentIdentifier]
+            self._signalRaisers[signal](entityId, componentInstance)
         end
 
         return true, componentInstance
@@ -207,10 +226,16 @@ function Core:removeComponent(entityId, componentIdentifier)
     local componentInstances = self._components[componentIdentifier]
 
     if componentInstances ~= nil then
-        local component = componentInstances[entityId]
+        local componentInstance = componentInstances[entityId]
+
+        if componentInstance == nil then
+            return false
+        end
+
         componentInstances[entityId] = nil
-        -- We don't have to branch on component ~= nil because of this!
-        return component ~= nil, component
+        local signal = self._componentRemovedSignals[componentIdentifier]
+        self._signalRaisers[signal](entityId, componentInstance)
+        return true, componentInstance
     else
         error(errorMessages.componentNotRegistered:format(componentIdentifier), 2)
     end
@@ -301,6 +326,44 @@ function Core:components(...)
             end
         end
     end)
+end
+
+--[[
+
+    Gets a signal that fires whenever a component is added to an entity. The
+    signal will be fired with the entity ID and the component that was added.
+
+    Throws if the identified component class isn't registered in the core.
+
+]]
+function Core:getComponentAddedSignal(componentIdentifier)
+    componentIdentifier = resolveComponentByIdentifier(componentIdentifier)
+
+    local signal = self._componentAddedSignals[componentIdentifier]
+    if signal == nil then
+        error(errorMessages.componentNotRegistered:format(componentIdentifier), 2)
+    end
+
+    return signal
+end
+
+--[[
+
+    Gets a signal that fires whenever a component is removed from an entity. The
+    signal will be fired with the entity ID and the component that was removed.
+
+    Throws if the identified component class isn't registered in the core.
+
+]]
+function Core:getComponentRemovedSignal(componentIdentifier)
+    componentIdentifier = resolveComponentByIdentifier(componentIdentifier)
+
+    local signal = self._componentRemovedSignals[componentIdentifier]
+    if signal == nil then
+        error(errorMessages.componentNotRegistered:format(componentIdentifier), 2)
+    end
+
+    return signal
 end
 
 --[[
