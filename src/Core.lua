@@ -134,7 +134,9 @@ function Core:destroyEntity(entityId)
         local removedSignal = self._componentRemovedSignals[componentClassName]
         local raise = self._signalRaisers[removedSignal]
         raise(entityId, componentInstances[entityId])
+    end
 
+    for componentClassName, componentInstances in pairs(self._components) do
         componentInstances[entityId] = nil
     end
 end
