@@ -38,7 +38,7 @@ local function resolveComponentByIdentifier(componentIdentifier)
         return componentIdentifier
     elseif typeof(componentIdentifier) == "table" then
         -- Assume it's a component class for efficiency / zoomies
-        return componentIdentifier.name
+        return componentIdentifier.className
     else
         error(errorMessages.invalidIdentifier:format(
             tostring(componentIdentifier),
@@ -381,7 +381,7 @@ end
 
 ]]
 function Core:addSingleton(componentClass)
-    local singletonIdentifier = componentClass.name
+    local singletonIdentifier = componentClass.className
 
     if self._singletons[singletonIdentifier] == nil then
         local singleton = componentClass._create()
