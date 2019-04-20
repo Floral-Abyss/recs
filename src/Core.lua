@@ -69,8 +69,8 @@ function Core.new()
         _steppers = {},
         -- A map of component class names to component added signals.
         _componentAddedSignals = {},
-        -- A map of component class names to component removed signals.
-        _componentRemovedSignals = {},
+        -- A map of component class names to component removing signals.
+        _componentRemovingSignals = {},
         -- A map of signals to raise functions.
         _signalRaisers = {},
     }, Core)
@@ -97,12 +97,12 @@ function Core:registerComponent(componentClass)
     self._components[name] = {}
 
     local addedSignal, raiseAdded = createSignal()
-    local removedSignal, raiseRemoved = createSignal()
+    local removingSignal, raiseRemoved = createSignal()
 
     self._componentAddedSignals[name] = addedSignal
-    self._componentRemovedSignals[name] = removedSignal
+    self._componentRemovingSignals[name] = removingSignal
     self._signalRaisers[addedSignal] = raiseAdded
-    self._signalRaisers[removedSignal] = raiseRemoved
+    self._signalRaisers[removingSignal] = raiseRemoved
 end
 
 --[[
@@ -237,9 +237,11 @@ function Core:removeComponent(entityId, componentIdentifier)
             return false
         end
 
-        componentInstances[entityId] = nil
-        local signal = self._componentRemovedSignals[componentIdentifier]
+
+        local signal = self._componentRemovingSignals[componentIdentifier]
         self._signalRaisers[signal](entityId, componentInstance)
+
+        componentInstances[entityId] = nil
         return true, componentInstance
     else
         error(errorMessages.componentNotRegistered:format(componentIdentifier), 2)
@@ -360,10 +362,10 @@ end
     Throws if the identified component class isn't registered in the Core.
 
 ]]
-function Core:getComponentRemovedSignal(componentIdentifier)
+function Core:getComponentRemovingSignal(componentIdentifier)
     componentIdentifier = resolveComponentByIdentifier(componentIdentifier)
 
-    local signal = self._componentRemovedSignals[componentIdentifier]
+    local signal = self._componentRemovingSignals[componentIdentifier]
     if signal == nil then
         error(errorMessages.componentNotRegistered:format(componentIdentifier), 2)
     end

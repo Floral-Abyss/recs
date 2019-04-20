@@ -10,15 +10,15 @@ return function()
         local core = Core.new()
         core:registerComponent(ComponentClass)
 
-        expect(core:getComponentRemovedSignal(ComponentClass)).to.be.ok()
+        expect(core:getComponentRemovingSignal(ComponentClass)).to.be.ok()
     end)
 
     it("should always get the same signal", function()
         local core = Core.new()
         core:registerComponent(ComponentClass)
 
-        local signalA = core:getComponentRemovedSignal(ComponentClass)
-        local signalB = core:getComponentRemovedSignal(ComponentClass)
+        local signalA = core:getComponentRemovingSignal(ComponentClass)
+        local signalB = core:getComponentRemovingSignal(ComponentClass)
         expect(signalA).to.equal(signalB)
     end)
 
@@ -27,7 +27,7 @@ return function()
         core:registerComponent(ComponentClass)
 
         local callCount = 0
-        local signal = core:getComponentRemovedSignal(ComponentClass)
+        local signal = core:getComponentRemovingSignal(ComponentClass)
         signal:connect(function(entityId, componentInstance)
             callCount = callCount + 1
         end)
@@ -45,7 +45,7 @@ return function()
         core:registerComponent(ComponentClass)
 
         local callCount = 0
-        local signal = core:getComponentRemovedSignal(ComponentClass)
+        local signal = core:getComponentRemovingSignal(ComponentClass)
         signal:connect(function(entityId, componentInstance)
             callCount = callCount + 1
         end)
@@ -62,7 +62,7 @@ return function()
         local entityId = core:createEntity()
         local removedEntityId, removedComponentInstance = nil, nil
 
-        local signal = core:getComponentRemovedSignal(ComponentClass)
+        local signal = core:getComponentRemovingSignal(ComponentClass)
         signal:connect(function(signalEntityId, signalComponentInstance)
             removedEntityId = signalEntityId
             removedComponentInstance = signalComponentInstance
@@ -82,7 +82,7 @@ return function()
         local callCount = 0
         local removedEntityId, removedComponentInstance = nil, nil
 
-        local signal = core:getComponentRemovedSignal(ComponentClass)
+        local signal = core:getComponentRemovingSignal(ComponentClass)
         signal:connect(function(signalEntityId, signalComponentInstance)
             callCount = callCount + 1
             removedEntityId = signalEntityId
@@ -101,7 +101,7 @@ return function()
         local core = Core.new()
 
         expect(function()
-            core:getComponentRemovedSignal(ComponentClass)
+            core:getComponentRemovingSignal(ComponentClass)
         end).to.throw()
     end)
 end
