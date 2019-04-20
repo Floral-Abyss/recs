@@ -30,7 +30,7 @@ local function defineComponent(name, defaultPropsGenerator)
         errorFormats.nonFunctionDefaultProps:format(typeof(defaultPropsGenerator)))
 
     local definition = {}
-    definition.name = name
+    definition.className = name
     definition.__index = definition
 
     function definition._create()
