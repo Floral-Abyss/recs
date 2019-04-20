@@ -52,7 +52,7 @@ Core.__index = Core
 
 function Core.new()
     local self = setmetatable({
-        -- All component instances in the core. Structure:
+        -- All component instances in the Core. Structure:
         -- [componentClassName] = {
         --     [entityId] = componentInstance,
         -- }
@@ -65,7 +65,7 @@ function Core.new()
         _singletons = {},
         -- A map of system class names to system instances.
         _systems = {},
-        -- An array of all the steppers in the system.
+        -- An array of all the steppers in the Core.
         _steppers = {},
         -- A map of component class names to component added signals.
         _componentAddedSignals = {},
@@ -80,7 +80,7 @@ end
 
 --[[
 
-    Registers a component class with the core. This method will throw if a
+    Registers a component class with the Core. This method will throw if a
     component class with the same name has already been registered.
 
 ]]
@@ -116,7 +116,7 @@ end
 
 ]]
 function Core:createEntity()
-    -- The core is using a hash map for storing component records.
+    -- The Core is using a hash map for storing component records.
     -- HttpService::GenerateGUID may be too slow for use, and can be replaced
     -- later if need be.
     return HttpService:GenerateGUID(true)
@@ -126,7 +126,7 @@ end
 
     Given an entity ID, destroys the entity, removing all components from it.
     This method will do nothing if the entity ID is invalid, was not part of
-    this core, or was destroyed already.
+    this Core, or was destroyed already.
 
 ]]
 function Core:destroyEntity(entityId)
@@ -141,7 +141,7 @@ end
     Given an entity ID and a component identifier, returns the component
     attached to the entity, or nil.
 
-    Throws if the identified component class isn't registered in the core.
+    Throws if the identified component class isn't registered in the Core.
 
 ]]
 function Core:getComponent(entityId, componentIdentifier)
@@ -160,7 +160,7 @@ end
     Given an entity ID and a component identifier, returns a boolean indicating
     whether the entity has an instance of the component attached to it.
 
-    Throws if the identified component class isn't registered in the core.
+    Throws if the identified component class isn't registered in the Core.
 
 ]]
 function Core:hasComponent(entityId, componentIdentifier)
@@ -184,7 +184,7 @@ end
     was added, and false if it already existed on the entity, followed by the
     added component.
 
-    Throws if the identified component class isn't registered in the core.
+    Throws if the identified component class isn't registered in the Core.
 
 ]]
 function Core:addComponent(entityId, componentIdentifier)
@@ -218,7 +218,7 @@ end
     instance from the entity. Returns true plus the removed component if there
     was a component instance attached to the entity, or false if there wasn't.
 
-    Throws if the identified component class isn't registered in the core.
+    Throws if the identified component class isn't registered in the Core.
 
 ]]
 function Core:removeComponent(entityId, componentIdentifier)
@@ -333,7 +333,7 @@ end
     Gets a signal that fires whenever a component is added to an entity. The
     signal will be fired with the entity ID and the component that was added.
 
-    Throws if the identified component class isn't registered in the core.
+    Throws if the identified component class isn't registered in the Core.
 
 ]]
 function Core:getComponentAddedSignal(componentIdentifier)
@@ -352,7 +352,7 @@ end
     Gets a signal that fires whenever a component is removed from an entity. The
     signal will be fired with the entity ID and the component that was removed.
 
-    Throws if the identified component class isn't registered in the core.
+    Throws if the identified component class isn't registered in the Core.
 
 ]]
 function Core:getComponentRemovedSignal(componentIdentifier)
@@ -368,9 +368,9 @@ end
 
 --[[
 
-    Adds a singleton component to the core. Returns the component instance.
+    Adds a singleton component to the Core. Returns the component instance.
 
-    Throws if the singleton component already exists on the core.
+    Throws if the singleton component already exists on the Core.
 
 ]]
 function Core:addSingleton(componentClass)
@@ -388,9 +388,9 @@ end
 --[[
 
     Given a component identifier, returns the singleton component attached to
-    this core.
+    this Core.
 
-    Throws if the singleton doesn't exist on the core.
+    Throws if the singleton doesn't exist on the Core.
 
 ]]
 function Core:getSingleton(componentIdentifier)
