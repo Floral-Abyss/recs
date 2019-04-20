@@ -7,6 +7,35 @@
     can be two different things, for ease of use. A component identifier is
     either a component class itself or the name of one.
 
+    Cores have a notion of plugins, which allow running code during some steps
+    of the Core that you wouldn't otherwise be able to. Plugins allow you to
+    bypass some of the separation of concerns that RECS normally encourages.
+    When taking advantage of this, you should be very careful - the structure
+    that RECS encourages is there for a reason, and you should think carefully
+    about whether you _need_ to bypass it.
+
+    Plugins are specified in the Core constructor as an array. A plugin must
+    be a table with a set of methods. Currently, the following plugin methods
+    are supported by the Core:
+
+    - coreInit(Core): Called when the Core initializes.
+    - componentRegistered(Core, componentClass): Called when a component class
+      is registered in the core.
+    - componentAdded(Core, entityId, componentInstance): Called when a component
+      instance is added to an entity.
+    - componentRemoving(Core, entityId, componentInstance): Called when a
+      component instance is being removed from an entity, i.e. during entity
+      destruction or when removing a component.
+    - singletonAdded(Core, singletonInstance): Called when a singleton component
+      is added to the Core.
+    - beforeSystemStart(Core): Called during Core::start, before systems' init
+      methods have been called.
+    - afterSystemStart(Core): Called during Core::start, after systems' init
+      methods have been called but before steppers start.
+    - afterStepperStart(Core): Called during Core::start, after steppers start.
+
+    All plugin methods are optional.
+
 ]]
 
 local HttpService = game:GetService("HttpService")
@@ -50,7 +79,13 @@ end
 local Core = {}
 Core.__index = Core
 
-function Core.new()
+--[[
+
+    Given an optional array of plugins, creates a new RECS Core. A Core is,
+    functionally, the entire ECS.
+
+]]
+function Core.new(plugins)
     local self = setmetatable({
         -- All component instances in the Core. Structure:
         -- [componentClassName] = {
@@ -73,9 +108,29 @@ function Core.new()
         _componentRemovingSignals = {},
         -- A map of signals to raise functions.
         _signalRaisers = {},
+        -- An array of all the plugins that the Core is using.
+        _plugins = plugins or {},
     }, Core)
 
+    self:__callPluginMethod("coreInit")
+
     return self
+end
+
+--[[
+
+    An internal method that calls a method on all plugins, if present, in the
+    order specified, with given arguments. Used to make plugins more ergonomic.
+
+    Plugin methods are called with the Core as the first argument.
+
+]]
+function Core:__callPluginMethod(methodName, ...)
+    for _, plugin in ipairs(self._plugins) do
+        if plugin[methodName] ~= nil then
+            plugin[methodName](plugin, self, ...)
+        end
+    end
 end
 
 --[[
@@ -85,7 +140,7 @@ end
 
 ]]
 function Core:registerComponent(componentClass)
-    local name = componentClass.name
+    local name = componentClass.className
 
     if self._componentClasses[name] ~= nil then
         error(errorMessages.componentClassAlreadyRegistered:format(
@@ -103,6 +158,25 @@ function Core:registerComponent(componentClass)
     self._componentRemovingSignals[name] = removingSignal
     self._signalRaisers[addedSignal] = raiseAdded
     self._signalRaisers[removingSignal] = raiseRemoved
+
+    self:__callPluginMethod("componentRegistered", componentClass)
+end
+
+--[[
+
+    Given a component class name, gets the class that was registered in the Core.
+
+    Throws if the component class has not been registered.
+
+]]
+function Core:getComponentClass(className)
+    local componentClass = self._componentClasses[className]
+
+    if componentClass == nil then
+        error(errorMessages.componentNotRegistered:format(className), 2)
+    end
+
+    return componentClass
 end
 
 --[[
@@ -130,10 +204,18 @@ end
 
 ]]
 function Core:destroyEntity(entityId)
+    -- Call plugin methods and fire removal signals before disturbing the
+    -- actual component.
     for componentClassName, componentInstances in pairs(self._components) do
-        local removedSignal = self._componentRemovedSignals[componentClassName]
-        local raise = self._signalRaisers[removedSignal]
-        raise(entityId, componentInstances[entityId])
+        local componentInstance = componentInstances[entityId]
+
+        if componentInstance ~= nil then
+            self:__callPluginMethod("componentRemoving", entityId, componentInstance)
+
+            local removingSignal = self._componentRemovingSignals[componentClassName]
+            local raise = self._signalRaisers[removingSignal]
+            raise(entityId, componentInstance)
+        end
     end
 
     for componentClassName, componentInstances in pairs(self._components) do
@@ -207,6 +289,8 @@ function Core:addComponent(entityId, componentIdentifier)
             componentInstance = componentClass._create()
             componentInstances[entityId] = componentInstance
 
+            self:__callPluginMethod("componentAdded", entityId, componentInstance)
+
             local signal = self._componentAddedSignals[componentIdentifier]
             self._signalRaisers[signal](entityId, componentInstance)
         end
@@ -237,6 +321,7 @@ function Core:removeComponent(entityId, componentIdentifier)
             return false
         end
 
+        self:__callPluginMethod("componentRemoving", entityId, componentInstance)
 
         local signal = self._componentRemovingSignals[componentIdentifier]
         self._signalRaisers[signal](entityId, componentInstance)
@@ -386,6 +471,9 @@ function Core:addSingleton(componentClass)
     if self._singletons[singletonIdentifier] == nil then
         local singleton = componentClass._create()
         self._singletons[singletonIdentifier] = singleton
+
+        self:__callPluginMethod("singletonAdded", singleton)
+
         return singleton
     else
         error(errorMessages.singletonAlreadyAdded:format(singletonIdentifier), 2)
@@ -525,9 +613,10 @@ end
 
 ]]
 function Core:start()
-    -- TODO: Give plugins the ability to do work before systems init.
+    self:__callPluginMethod("beforeSystemStart")
+
     -- Initialize all systems first.
-    for _, system in ipairs(self._systems) do
+    for _, system in pairs(self._systems) do
         -- Systems are not required to declare an init method, and a no-op one
         -- is not provided in the default System class.
         if system.init ~= nil then
@@ -535,10 +624,14 @@ function Core:start()
         end
     end
 
+    self:__callPluginMethod("afterSystemStart")
+
     -- Now start all steppers.
     for _, stepper in ipairs(self._steppers) do
         stepper:start()
     end
+
+    self:__callPluginMethod("afterStepperStart")
 end
 
 return Core
