@@ -74,6 +74,29 @@ return function()
         expect(componentInstance).to.equal(removedComponentInstance)
     end)
 
+    it("should be fired when destroying an entity", function()
+        local core = Core.new()
+        core:registerComponent(ComponentClass)
+
+        local entityId = core:createEntity()
+        local callCount = 0
+        local removedEntityId, removedComponentInstance = nil, nil
+
+        local signal = core:getComponentRemovedSignal(ComponentClass)
+        signal:connect(function(signalEntityId, signalComponentInstance)
+            callCount = callCount + 1
+            removedEntityId = signalEntityId
+            removedComponentInstance = signalComponentInstance
+        end)
+
+        local _, componentInstance = core:addComponent(entityId, ComponentClass)
+        core:destroyEntity(entityId)
+
+        expect(callCount).to.equal(1)
+        expect(entityId).to.equal(removedEntityId)
+        expect(componentInstance).to.equal(removedComponentInstance)
+    end)
+
     it("should throw if the component has not been registered", function()
         local core = Core.new()
 

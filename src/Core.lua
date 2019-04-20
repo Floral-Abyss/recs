@@ -130,8 +130,11 @@ end
 
 ]]
 function Core:destroyEntity(entityId)
-    -- TODO: Tell systems the components are being destroyed to let them clean up stuff?
     for componentClassName, componentInstances in pairs(self._components) do
+        local removedSignal = self._componentRemovedSignals[componentClassName]
+        local raise = self._signalRaisers[removedSignal]
+        raise(entityId, componentInstances[entityId])
+
         componentInstances[entityId] = nil
     end
 end
