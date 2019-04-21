@@ -27,7 +27,7 @@ return function()
             end
         }
 
-        local core = Core.new({ pluginA, pluginB, pluginC })
+        Core.new({ pluginA, pluginB, pluginC })
         expect(callIndex).to.equal(3)
     end)
 
@@ -40,7 +40,7 @@ return function()
             end
         }
 
-        local core = Core.new({ plugin })
+        Core.new({ plugin })
         expect(callCount).to.equal(1)
     end)
 
@@ -54,7 +54,7 @@ return function()
                 end
             }
 
-            local core = Core.new({ plugin })
+            Core.new({ plugin })
             expect(callCount).to.equal(1)
         end)
 
