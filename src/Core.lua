@@ -251,6 +251,8 @@ end
 
 ]]
 function Core:hasComponent(entityId, componentIdentifier)
+    componentIdentifier = resolveComponentByIdentifier(componentIdentifier)
+
     -- We could implement this in terms of getComponent but then the stack level
     -- for getComponent's error message would be wrong - it would point at this
     -- component, not the caller of hasComponent. Thus, hasComponent is built
