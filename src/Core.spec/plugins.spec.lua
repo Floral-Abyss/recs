@@ -128,6 +128,56 @@ return function()
             expect(entity).to.equal(calledEntity)
             expect(componentInstance).to.equal(calledComponentInstance)
         end)
+
+        it("should be called before events are fired in addComponent", function()
+            local ComponentClass = defineComponent("TestComponent", function()
+                return {}
+            end)
+
+            local eventFired = false
+
+            local plugin = {
+                componentAdded = function(self, core, entityId, componentInstance)
+                    expect(eventFired).to.equal(false)
+                end,
+            }
+
+            local core = Core.new({ plugin })
+            core:registerComponent(ComponentClass)
+
+            local signal = core:getComponentAddedSignal(ComponentClass)
+            signal:connect(function()
+                eventFired = true
+            end)
+
+            local entity = core:createEntity()
+            core:addComponent(entity, ComponentClass)
+        end)
+
+        it("should be called before events are fired in batchAddComponents", function()
+            local ComponentClass = defineComponent("TestComponent", function()
+                return {}
+            end)
+
+            local eventFired = false
+
+            local plugin = {
+                componentAdded = function(self, core, entityId, componentInstance)
+                    expect(eventFired).to.equal(false)
+                end,
+            }
+
+            local core = Core.new({ plugin })
+            core:registerComponent(ComponentClass)
+
+            local signal = core:getComponentAddedSignal(ComponentClass)
+            signal:connect(function()
+                eventFired = true
+            end)
+
+            local entity = core:createEntity()
+            core:batchAddComponents(entity, ComponentClass)
+        end)
     end)
 
     describe("componentRemoving", function()
@@ -189,6 +239,84 @@ return function()
             expect(callCount).to.equal(1)
             expect(entity).to.equal(calledEntity)
             expect(componentInstance).to.equal(calledComponentInstance)
+        end)
+
+        it("should be called after events are fired in removeComponent", function()
+            local ComponentClass = defineComponent("TestComponent", function()
+                return {}
+            end)
+
+            local eventFired = false
+
+            local plugin = {
+                componentRemoving = function(self, core, entityId, componentInstance)
+                    expect(eventFired).to.equal(true)
+                end,
+            }
+
+            local core = Core.new({ plugin })
+            core:registerComponent(ComponentClass)
+
+            local signal = core:getComponentRemovingSignal(ComponentClass)
+            signal:connect(function()
+                eventFired = true
+            end)
+
+            local entity = core:createEntity()
+            core:addComponent(entity, ComponentClass)
+            core:removeComponent(entity, ComponentClass)
+        end)
+
+        it("should be called after events are fired in batchRemoveComponents", function()
+            local ComponentClass = defineComponent("TestComponent", function()
+                return {}
+            end)
+
+            local eventFired = false
+
+            local plugin = {
+                componentRemoving = function(self, core, entityId, componentInstance)
+                    expect(eventFired).to.equal(true)
+                end,
+            }
+
+            local core = Core.new({ plugin })
+            core:registerComponent(ComponentClass)
+
+            local signal = core:getComponentRemovingSignal(ComponentClass)
+            signal:connect(function()
+                eventFired = true
+            end)
+
+            local entity = core:createEntity()
+            core:addComponent(entity, ComponentClass)
+            core:batchRemoveComponents(entity, ComponentClass)
+        end)
+
+        it("should be called after events are fired in destroyEntity", function()
+            local ComponentClass = defineComponent("TestComponent", function()
+                return {}
+            end)
+
+            local eventFired = false
+
+            local plugin = {
+                componentRemoving = function(self, core, entityId, componentInstance)
+                    expect(eventFired).to.equal(true)
+                end,
+            }
+
+            local core = Core.new({ plugin })
+            core:registerComponent(ComponentClass)
+
+            local signal = core:getComponentRemovingSignal(ComponentClass)
+            signal:connect(function()
+                eventFired = true
+            end)
+
+            local entity = core:createEntity()
+            core:addComponent(entity, ComponentClass)
+            core:destroyEntity(entity)
         end)
     end)
 

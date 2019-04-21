@@ -22,10 +22,12 @@
     - componentRegistered(Core, componentClass): Called when a component class
       is registered in the core.
     - componentAdded(Core, entityId, componentInstance): Called when a component
-      instance is added to an entity.
+      instance is added to an entity. Called before the addition signal for that
+      component has been fired.
     - componentRemoving(Core, entityId, componentInstance): Called when a
       component instance is being removed from an entity, i.e. during entity
-      destruction or when removing a component.
+      destruction or when removing a component. Called after the removal signal
+      for that component has been fired.
     - singletonAdded(Core, singletonInstance): Called when a singleton component
       is added to the Core.
     - beforeSystemStart(Core): Called during Core::start, before systems' init
@@ -210,11 +212,11 @@ function Core:destroyEntity(entityId)
         local componentInstance = componentInstances[entityId]
 
         if componentInstance ~= nil then
-            self:__callPluginMethod("componentRemoving", entityId, componentInstance)
-
             local removingSignal = self._componentRemovingSignals[componentClassName]
             local raise = self._signalRaisers[removingSignal]
             raise(entityId, componentInstance)
+
+            self:__callPluginMethod("componentRemoving", entityId, componentInstance)
         end
     end
 
@@ -366,10 +368,10 @@ function Core:removeComponent(entityId, componentIdentifier)
             return false
         end
 
-        self:__callPluginMethod("componentRemoving", entityId, componentInstance)
-
         local signal = self._componentRemovingSignals[componentIdentifier]
         self._signalRaisers[signal](entityId, componentInstance)
+
+        self:__callPluginMethod("componentRemoving", entityId, componentInstance)
 
         componentInstances[entityId] = nil
         return true, componentInstance
