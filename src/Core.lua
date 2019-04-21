@@ -305,6 +305,49 @@ end
 
 --[[
 
+    Given an entity ID and a tuple of component identifiers, adds all the
+    components to the entity. Returns nothing, unlike addComponent.
+    batchAddComponents will add all components to an entity before firing
+    any added signals or invoking plugins' componentAdded callbacks.
+
+    Throws if any of the identified component classes aren't registered in the Core.
+
+]]
+function Core:batchAddComponents(entityId, ...)
+    local createdInstances = {}
+    local identifierCount = select("#", ...)
+
+    for i = 1, identifierCount do
+        local rawIdentifier = select(i, ...)
+        local convertedIdentifier = resolveComponentByIdentifier(rawIdentifier)
+        local componentClass = self._componentClasses[convertedIdentifier]
+
+        if componentClass == nil then
+            error(errorMessages.componentNotRegistered:format(convertedIdentifier), 2)
+        end
+
+        local componentInstances = self._components[convertedIdentifier]
+
+        -- It's possible that you could call batchAddComponents when a component
+        -- already exists on the entity, so we should avoid leaking existing
+        -- components if they exist.
+        if componentInstances[entityId] == nil then
+            local componentInstance = componentClass._create()
+            createdInstances[convertedIdentifier] = componentInstance
+            componentInstances[entityId] = componentInstance
+        end
+    end
+
+    for identifier, componentInstance in pairs(createdInstances) do
+        self:__callPluginMethod("componentAdded", entityId, componentInstance)
+
+        local addedSignal = self._componentAddedSignals[identifier]
+        self._signalRaisers[addedSignal](entityId, componentInstance)
+    end
+end
+
+--[[
+
     Given an entity ID and a component identifier, removes the component
     instance from the entity. Returns true plus the removed component if there
     was a component instance attached to the entity, or false if there wasn't.
@@ -332,6 +375,46 @@ function Core:removeComponent(entityId, componentIdentifier)
         return true, componentInstance
     else
         error(errorMessages.componentNotRegistered:format(componentIdentifier), 2)
+    end
+end
+
+--[[
+
+    Given an entity ID and a series of component identifiers, removes all
+    specified component instances from the entity. Unlike removeComponent, does
+    not return anything. batchRemoveComponents will fire all removal signals and
+    invoke all plugins before actually removing components.
+
+    Throws if any of the identified component classes aren't registered in the Core.
+
+]]
+function Core:batchRemoveComponents(entityId, ...)
+    local toRemove = {}
+    local identifierCount = select("#", ...)
+
+    for i = 1, identifierCount do
+        local rawIdentifier = select(i, ...)
+        local convertedIdentifier = resolveComponentByIdentifier(rawIdentifier)
+        local componentInstances = self._components[convertedIdentifier]
+
+        if componentInstances == nil then
+            error(errorMessages.componentNotRegistered:format(convertedIdentifier), 2)
+        end
+
+        local componentInstance = componentInstances[entityId]
+
+        if componentInstance ~= nil then
+            local removingSignal = self._componentRemovingSignals[convertedIdentifier]
+            self._signalRaisers[removingSignal](entityId, componentInstance)
+
+            self:__callPluginMethod("componentRemoving", entityId, componentInstance)
+
+            table.insert(toRemove, componentInstances)
+        end
+    end
+
+    for _, instances in ipairs(toRemove) do
+        instances[entityId] = nil
     end
 end
 
