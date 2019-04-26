@@ -5,22 +5,28 @@
     "HttpService": {
       "$className": "HttpService",
       "$properties": {
-        "HttpEnabled": {
-          "Type": "Bool",
-          "Value": true
-        }
+        "HttpEnabled": true
       }
     },
     "ReplicatedStorage": {
       "$className": "ReplicatedStorage",
-      "RECS": {
-        "$path": "src"
+      "Packages": {
+        "$path": "packages",
+        "RECS": {
+          "$path": "src"
+        }
       }
     },
     "ServerScriptService": {
       "$className": "ServerScriptService",
-      "RECSTest": {
-        "$path": "example"
+      "RECSTests": {
+        "$path": "tests"
+      }
+    },
+    "Players": {
+      "$className": "Players",
+      "$properties": {
+        "CharacterAutoLoads": false
       }
     }
   }

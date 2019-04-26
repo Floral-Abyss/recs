@@ -1,24 +1,26 @@
 local createCleaner = require(script.Parent.createCleaner)
 
 local System = {}
+System.__index = System
+System._kind = System
 
-System.InterestType = {
-    Added = 1,
-    Removed = 2,
-}
+function System.__isSystemClass(systemClass)
+    if typeof(systemClass) ~= "table" then
+        return false
+    end
+
+    return getmetatable(systemClass) == System
+end
 
 -- luacheck: ignore self
 function System:extend(systemName)
     local systemClass = setmetatable({
-        className = systemName,
-    }, {
-        __index = System,
-    })
+        name = systemName,
+    }, System)
 
     function systemClass._create(core)
         local systemInstance = setmetatable({
             core = core,
-            className = systemName,
             maid = createCleaner(),
         }, {
             __index = systemClass

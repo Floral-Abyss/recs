@@ -2,4 +2,7 @@ name = "RECS"
 author = "AmaranthineCodices <git@amaranthinecodices.me>"
 license = "MIT"
 content_root = "src"
-version = "0.1.0"
+version = "1.0.0"
+
+[dependencies]
+TestEZ = { git = "https://github.com/Roblox/testez", rev = "master" }

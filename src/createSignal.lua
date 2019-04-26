@@ -13,20 +13,19 @@ local function createSignal()
             connection.Connected = false
             listeners[listener] = nil
         end
-
         connection.disconnect = connection.Disconnect
+
         return connection
     end
     signal.connect = signal.Connect
 
-    function signal:Fire(...)
+    local function fire(...)
         for listener, _ in pairs(listeners) do
             coroutine.wrap(listener)(...)
         end
     end
-    signal.fire = signal.Fire
 
-    return signal
+    return signal, fire
 end
 
 return createSignal

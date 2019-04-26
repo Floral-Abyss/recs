@@ -1,0 +1,8 @@
+lockfile_format_version = 0
+
+[[package]]
+name = "TestEZ"
+type = "git"
+source = "https://github.com/Roblox/testez"
+commit = "d488b21df0388f8729feda26965123c63de3869f"
+rev = "master"
