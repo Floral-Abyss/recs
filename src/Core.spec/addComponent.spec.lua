@@ -2,9 +2,12 @@ local Core = require(script.Parent.Parent.Core)
 local defineComponent = require(script.Parent.Parent.defineComponent)
 
 return function()
-    local ComponentClass = defineComponent("TestComponent", function()
-        return {}
-    end)
+    local ComponentClass = defineComponent({
+        name = "TestComponent",
+        generator = function()
+            return {}
+        end
+    })
 
     it("should add components", function()
         local core = Core.new()
@@ -41,6 +44,28 @@ return function()
 
         expect(function()
             core:addComponent(entity, ComponentClass)
+        end).to.throw()
+    end)
+
+    it("should throw if the component's entityFilter forbids the addition", function()
+        local core = Core.new()
+        local entity = core:createEntity()
+
+        local FilteredComponent = defineComponent({
+            name = "Filtered",
+            generator = function()
+                return {}
+            end,
+            entityFilter = function(testEntity)
+                expect(testEntity).to.equal(entity)
+                return false
+            end,
+        })
+
+        core:registerComponent(FilteredComponent)
+
+        expect(function()
+            core:addComponent(entity, FilteredComponent)
         end).to.throw()
     end)
 end

@@ -30,66 +30,75 @@ return function()
     end)
 
     describe("registerComponent", function()
-        local component = defineComponent("TestComponent", function()
-            return {}
-        end)
+        local ComponentClass = defineComponent({
+            name = "TestComponent",
+            generator = function()
+                return {}
+            end
+        })
 
         it("should succeed when called", function()
             local core = Core.new()
-            core:registerComponent(component)
+            core:registerComponent(ComponentClass)
         end)
 
         it("should throw when registering a component repeatedly", function()
             local core = Core.new()
-            core:registerComponent(component)
+            core:registerComponent(ComponentClass)
 
             expect(function()
-                core:registerComponent(component)
+                core:registerComponent(ComponentClass)
             end).to.throw()
         end)
     end)
 
     describe("addSingleton", function()
-        local component = defineComponent("TestSingleton", function()
-            return {}
-        end)
+        local SingletonClass = defineComponent({
+            name = "TestSingleton",
+            generator = function()
+                return {}
+            end
+        })
 
         it("should add singleton components", function()
             local core = Core.new()
-            local singleton = core:addSingleton(component)
+            local singleton = core:addSingleton(SingletonClass)
             expect(singleton).to.be.ok()
-            expect(core:getSingleton(component)).to.be.ok()
-            expect(core:getSingleton(component)).to.equal(singleton)
+            expect(core:getSingleton(SingletonClass)).to.be.ok()
+            expect(core:getSingleton(SingletonClass)).to.equal(singleton)
         end)
 
         it("should throw if the singleton is already added", function()
             local core = Core.new()
-            core:addSingleton(component)
+            core:addSingleton(SingletonClass)
 
             expect(function()
-                core:addSingleton(component)
+                core:addSingleton(SingletonClass)
             end).to.throw()
         end)
     end)
 
     describe("getSingleton", function()
-        local component = defineComponent("TestSingleton", function()
-            return {}
-        end)
+        local SingletonClass = defineComponent({
+            name = "TestSingleton",
+            generator = function()
+                return {}
+            end
+        })
 
         it("should get singleton components", function()
             local core = Core.new()
-            local singleton = core:addSingleton(component)
+            local singleton = core:addSingleton(SingletonClass)
             expect(singleton).to.be.ok()
-            expect(core:getSingleton(component)).to.be.ok()
-            expect(core:getSingleton(component)).to.equal(singleton)
+            expect(core:getSingleton(SingletonClass)).to.be.ok()
+            expect(core:getSingleton(SingletonClass)).to.equal(singleton)
         end)
 
         it("should throw if the singleton isn't added", function()
             local core = Core.new()
 
             expect(function()
-                core:getSingleton(component)
+                core:getSingleton(SingletonClass)
             end).to.throw()
         end)
     end)

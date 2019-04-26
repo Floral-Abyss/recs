@@ -80,9 +80,12 @@ return function()
 
     describe("componentRegistered", function()
         it("should be called when a component is registered", function()
-            local ComponentClass = defineComponent("TestComponent", function()
-                return {}
-            end)
+            local ComponentClass = defineComponent({
+                name = "TestComponent",
+                generator = function()
+                    return {}
+                end
+            })
 
             local callCount = 0
 
@@ -101,9 +104,12 @@ return function()
 
     describe("componentAdded", function()
         it("should be called when a component is added to an entity", function()
-            local ComponentClass = defineComponent("TestComponent", function()
-                return {}
-            end)
+            local ComponentClass = defineComponent({
+                name = "TestComponent",
+                generator = function()
+                    return {}
+                end
+            })
 
             local callCount = 0
             local calledEntity = nil
@@ -130,9 +136,12 @@ return function()
         end)
 
         it("should be called before events are fired in addComponent", function()
-            local ComponentClass = defineComponent("TestComponent", function()
-                return {}
-            end)
+            local ComponentClass = defineComponent({
+                name = "TestComponent",
+                generator = function()
+                    return {}
+                end
+            })
 
             local eventFired = false
 
@@ -155,9 +164,12 @@ return function()
         end)
 
         it("should be called before events are fired in batchAddComponents", function()
-            local ComponentClass = defineComponent("TestComponent", function()
-                return {}
-            end)
+            local ComponentClass = defineComponent({
+                name = "TestComponent",
+                generator = function()
+                    return {}
+                end
+            })
 
             local eventFired = false
 
@@ -182,9 +194,12 @@ return function()
 
     describe("componentRemoving", function()
         it("should be called when a component is removed from an entity", function()
-            local ComponentClass = defineComponent("TestComponent", function()
-                return {}
-            end)
+            local ComponentClass = defineComponent({
+                name = "TestComponent",
+                generator = function()
+                    return {}
+                end
+            })
 
             local callCount = 0
             local calledEntity = nil
@@ -212,9 +227,12 @@ return function()
         end)
 
         it("should be called when an entity is destroyed", function()
-            local ComponentClass = defineComponent("TestComponent", function()
-                return {}
-            end)
+            local ComponentClass = defineComponent({
+                name = "TestComponent",
+                generator = function()
+                    return {}
+                end
+            })
 
             local callCount = 0
             local calledEntity = nil
@@ -242,9 +260,12 @@ return function()
         end)
 
         it("should be called after events are fired in removeComponent", function()
-            local ComponentClass = defineComponent("TestComponent", function()
-                return {}
-            end)
+            local ComponentClass = defineComponent({
+                name = "TestComponent",
+                generator = function()
+                    return {}
+                end
+            })
 
             local eventFired = false
 
@@ -268,9 +289,12 @@ return function()
         end)
 
         it("should be called after events are fired in batchRemoveComponents", function()
-            local ComponentClass = defineComponent("TestComponent", function()
-                return {}
-            end)
+            local ComponentClass = defineComponent({
+                name = "TestComponent",
+                generator = function()
+                    return {}
+                end
+            })
 
             local eventFired = false
 
@@ -294,9 +318,12 @@ return function()
         end)
 
         it("should be called after events are fired in destroyEntity", function()
-            local ComponentClass = defineComponent("TestComponent", function()
-                return {}
-            end)
+            local ComponentClass = defineComponent({
+                name = "TestComponent",
+                generator = function()
+                    return {}
+                end
+            })
 
             local eventFired = false
 
@@ -322,9 +349,12 @@ return function()
 
     describe("singletonAdded", function()
         it("should be called when a singleton is added", function()
-            local ComponentClass = defineComponent("TestComponent", function()
-                return {}
-            end)
+            local ComponentClass = defineComponent({
+                name = "TestComponent",
+                generator = function()
+                    return {}
+                end
+            })
 
             local callCount = 0
             local calledSingleton = nil

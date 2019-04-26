@@ -6,3 +6,4 @@ version = "1.0.0"
 
 [dependencies]
 TestEZ = { git = "https://github.com/Roblox/testez", rev = "master" }
+t = { git = "https://github.com/osyrisrblx/t", rev = "master" }
