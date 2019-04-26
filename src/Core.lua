@@ -166,6 +166,26 @@ end
 
 --[[
 
+    Given an instance, traverses its children. If a child is a ModuleScript, it
+    is required and the return result is passed to registerComponent. If a child
+    is a Folder, its children are inspected using the same process. Other
+    instance classes are ignored.
+
+    Throws if one of the component classes has already been registered in the Core.
+
+]]
+function Core:registerComponentsInInstance(rootInstance)
+    for _, child in ipairs(rootInstance:GetChildren()) do
+        if child:IsA("ModuleScript") then
+            self:registerComponent(require(child))
+        elseif child:IsA("Folder") then
+            self:registerComponentsInInstance(child)
+        end
+    end
+end
+
+--[[
+
     Given a component class name, gets the class that was registered in the Core.
 
     Throws if the component class has not been registered.
