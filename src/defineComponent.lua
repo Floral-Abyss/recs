@@ -6,6 +6,7 @@
     The argument table should have the following keys:
     - name (string)
     - generator (() -> table)
+    - entityFilter (entity -> bool)
 
     The name must be a string; there are no restrictions on its value otherwise.
     However, duplicate names are not recommended, as Cores require that all
@@ -16,6 +17,14 @@
     provide the className field that will refer to the class name of the
     component.
 
+    The entity filter function must take an entity and return a boolean
+    indicating whether the component can be applied to that entity. This can be
+    used to ensure that a component is only attached to entities that are Roblox
+    instances, or specific Roblox instances, or only abstract entities.
+
+    If the entity filter function is not present in the args table, the
+    component can be attached to any entity.
+
 ]]
 
 local t = require(script.Parent.Parent.t)
@@ -23,6 +32,7 @@ local t = require(script.Parent.Parent.t)
 local isComponentArgs = t.strictInterface({
     name = t.string,
     generator = t.callback,
+    entityFilter = t.optional(t.callback),
 })
 
 local errorFormats = {
@@ -35,6 +45,7 @@ local function defineComponent(args)
 
     local definition = {}
     definition.className = args.name
+    definition.entityFilter = args.entityFilter
     definition.__index = definition
 
     local generator = args.generator

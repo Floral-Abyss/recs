@@ -43,6 +43,24 @@ return function()
         end).to.throw()
     end)
 
+    it("should accept an entity filter", function()
+        defineComponent({
+            name = "Test",
+            generator = function() end,
+            entityFilter = function() end,
+        })
+    end)
+
+    it("should throw if given a non-function entity filter", function()
+        expect(function()
+            defineComponent({
+                name = "Test",
+                generator = function() end,
+                entityFilter = true,
+            })
+        end).to.throw()
+    end)
+
     describe("_create", function()
         it("should create components", function()
             local class = defineComponent({
