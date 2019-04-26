@@ -22,9 +22,6 @@
     },
     "ServerScriptService": {
       "$className": "ServerScriptService",
-      "RECSExample": {
-        "$path": "example"
-      },
       "RECSTests": {
         "$path": "tests"
       }
