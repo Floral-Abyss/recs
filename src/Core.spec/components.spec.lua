@@ -3,9 +3,12 @@ local defineComponent = require(script.Parent.Parent.defineComponent)
 
 return function()
     it("should iterate over entities", function()
-        local ComponentClass = defineComponent("TestComponent", function()
-            return {}
-        end)
+        local ComponentClass = defineComponent({
+            name = "TestComponent",
+            generator = function()
+                return {}
+            end
+        })
 
         local core = Core.new()
         core:registerComponent(ComponentClass)
@@ -21,13 +24,19 @@ return function()
     end)
 
     it("should return components in the order specified", function()
-        local ComponentA = defineComponent("A", function()
-            return {}
-        end)
+        local ComponentA = defineComponent({
+            name = "A",
+            generator = function()
+                return {}
+            end,
+        })
 
-        local ComponentB = defineComponent("B", function()
-            return {}
-        end)
+        local ComponentB = defineComponent({
+            name = "B",
+            generator = function()
+                return {}
+            end,
+        })
 
         local core = Core.new()
         core:registerComponent(ComponentA)
@@ -52,13 +61,19 @@ return function()
     end)
 
     it("should exclude entities that do not have all the components", function()
-        local ComponentA = defineComponent("A", function()
-            return {}
-        end)
+        local ComponentA = defineComponent({
+            name = "A",
+            generator = function()
+                return {}
+            end,
+        })
 
-        local ComponentB = defineComponent("B", function()
-            return {}
-        end)
+        local ComponentB = defineComponent({
+            name = "B",
+            generator = function()
+                return {}
+            end,
+        })
 
         local core = Core.new()
         core:registerComponent(ComponentA)
@@ -82,13 +97,19 @@ return function()
     end)
 
     it("should include entities that have components that are not specified", function()
-        local ComponentA = defineComponent("A", function()
-            return {}
-        end)
+        local ComponentA = defineComponent({
+            name = "A",
+            generator = function()
+                return {}
+            end,
+        })
 
-        local ComponentB = defineComponent("B", function()
-            return {}
-        end)
+        local ComponentB = defineComponent({
+            name = "B",
+            generator = function()
+                return {}
+            end,
+        })
 
         local core = Core.new()
         core:registerComponent(ComponentA)

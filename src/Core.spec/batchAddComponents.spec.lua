@@ -2,17 +2,26 @@ local Core = require(script.Parent.Parent.Core)
 local defineComponent = require(script.Parent.Parent.defineComponent)
 
 return function()
-    local ComponentA = defineComponent("A", function()
-        return {}
-    end)
+    local ComponentA = defineComponent({
+        name = "A",
+        generator = function()
+            return {}
+        end,
+    })
 
-    local ComponentB = defineComponent("B", function()
-        return {}
-    end)
+    local ComponentB = defineComponent({
+        name = "B",
+        generator = function()
+            return {}
+        end,
+    })
 
-    local ComponentC = defineComponent("C", function()
-        return {}
-    end)
+    local ComponentC = defineComponent({
+        name = "C",
+        generator = function()
+            return {}
+        end,
+    })
 
     it("should add components", function()
         local core = Core.new()
