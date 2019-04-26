@@ -103,4 +103,26 @@ return function()
             core:batchAddComponents(entity, ComponentA, ComponentB, ComponentC)
         end).to.throw()
     end)
+
+    it("should throw if a component's entityFilter forbids the addition", function()
+        local core = Core.new()
+        local entity = core:createEntity()
+
+        local FilteredComponent = defineComponent({
+            name = "Filtered",
+            generator = function()
+                return {}
+            end,
+            entityFilter = function(testEntity)
+                expect(testEntity).to.equal(entity)
+                return false
+            end,
+        })
+
+        core:registerComponent(FilteredComponent)
+
+        expect(function()
+            core:batchAddComponents(entity, FilteredComponent)
+        end).to.throw()
+    end)
 end

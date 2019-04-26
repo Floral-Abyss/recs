@@ -50,6 +50,7 @@ local errorMessages = {
     invalidIdentifier = "%q, a %s, is not a valid identifier for a component class",
     componentNotRegistered = "The component %q is not registered in this Core",
     componentClassAlreadyRegistered = "The component class %q is already registered in this Core",
+    componentNotApplicable = "The component %q cannot be added to the entity %q of type %s",
     singletonAlreadyAdded = "A singleton component for class %q is already added to this Core",
     singletonNotPresent = "The singleton component for class %q does not exist in this Core",
     systemNotRegistered = "The system %q is not registered in this Core",
@@ -132,6 +133,24 @@ function Core:__callPluginMethod(methodName, ...)
         if plugin[methodName] ~= nil then
             plugin[methodName](plugin, self, ...)
         end
+    end
+end
+
+--[[
+
+    Tests if a component can be added to an entity.
+
+    Throws if this is not the case.
+
+]]
+function Core:__checkIfCanAddComponentToEntity(componentClass, entityId)
+    if componentClass.entityFilter ~= nil and not componentClass.entityFilter(entityId) then
+        error(
+            errorMessages.componentNotApplicable:format(
+                componentClass.className,
+                tostring(entityId),
+                typeof(entityId)),
+        3)
     end
 end
 
@@ -303,6 +322,8 @@ function Core:addComponent(entityId, componentIdentifier)
     local componentClass = self._componentClasses[componentIdentifier]
 
     if componentClass ~= nil then
+        self:__checkIfCanAddComponentToEntity(componentClass, entityId)
+
         local componentInstances = self._components[componentIdentifier]
         local componentInstance = componentInstances[entityId]
 
@@ -347,6 +368,8 @@ function Core:batchAddComponents(entityId, ...)
         if componentClass == nil then
             error(errorMessages.componentNotRegistered:format(convertedIdentifier), 2)
         end
+
+        self:__checkIfCanAddComponentToEntity(componentClass, entityId)
 
         local componentInstances = self._components[convertedIdentifier]
 

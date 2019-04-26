@@ -46,4 +46,26 @@ return function()
             core:addComponent(entity, ComponentClass)
         end).to.throw()
     end)
+
+    it("should throw if the component's entityFilter forbids the addition", function()
+        local core = Core.new()
+        local entity = core:createEntity()
+
+        local FilteredComponent = defineComponent({
+            name = "Filtered",
+            generator = function()
+                return {}
+            end,
+            entityFilter = function(testEntity)
+                expect(testEntity).to.equal(entity)
+                return false
+            end,
+        })
+
+        core:registerComponent(FilteredComponent)
+
+        expect(function()
+            core:addComponent(entity, FilteredComponent)
+        end).to.throw()
+    end)
 end
