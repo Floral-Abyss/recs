@@ -480,11 +480,28 @@ end
 
 ]]
 function Core:components(...)
+    local count = select("#", ...)
+
+    -- We don't have to do a lot of work if there's only one component!
+    -- Most of the bulk of this method is handling multiple arguments; when
+    -- there's only one, the workload is much lighter.
+    if count == 1 then
+        local rawIdentifier = ...
+        local convertedIdentifier = resolveComponentByIdentifier(rawIdentifier)
+
+        local map = self._components[convertedIdentifier]
+
+        if map == nil then
+            error(errorMessages.componentNotRegistered:format(convertedIdentifier), 2)
+        end
+
+        -- Pairs returns an iterator (or something that can be used as one, anyways)
+        return pairs(map)
+    end
+
     -- Use a constant table to accumulate results in to avoid unnecessary table
     -- allocations and resizing
     local result = {}
-
-    local count = select("#", ...)
     local componentMaps = {}
 
     -- Convert the supplied identifiers to internal keys and look up the
