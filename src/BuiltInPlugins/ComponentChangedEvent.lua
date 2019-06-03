@@ -1,8 +1,8 @@
 local createSignal = require(script.Parent.Parent.createSignal)
 
-local componentEventPlugin = {}
+local componentChangedEventPlugin = {}
 
-function componentEventPlugin:componentRegistered(core, componentClass)
+function componentChangedEventPlugin:componentRegistered(core, componentClass)
     function componentClass.updateProperty(componentInstance, key, newValue)
         local oldValue = componentInstance[key]
 
@@ -14,11 +14,11 @@ function componentEventPlugin:componentRegistered(core, componentClass)
     end
 end
 
-function componentEventPlugin:componentAdded(core, entityId, componentInstance)
+function componentChangedEventPlugin:componentAdded(core, entityId, componentInstance)
     local propertyChangedSignal, raisePropertyChanged = createSignal()
 
     componentInstance.changed = propertyChangedSignal
     componentInstance.raisePropertyChanged = raisePropertyChanged
 end
 
-return componentEventPlugin
+return componentChangedEventPlugin

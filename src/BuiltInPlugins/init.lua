@@ -1,3 +1,3 @@
 return {
-    ComponentEventPlugin = require(script.ComponentEventPlugin),
+    ComponentChangedEvent = require(script.ComponentChangedEvent),
 }
