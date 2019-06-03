@@ -8,8 +8,6 @@ function componentChangedEventPlugin:componentRegistered(core, componentClass)
 
         componentInstance[key] = newValue
 
-        print("componentInstance.raisePropertyChanged")
-
         componentInstance.raisePropertyChanged(key, newValue, oldValue)
     end
 end
