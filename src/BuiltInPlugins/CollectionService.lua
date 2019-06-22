@@ -2,14 +2,14 @@ local CollectionService = game:GetService("CollectionService")
 
 local function createCollectionServicePlugin()
     local collectionServicePlugin = {}
-    local components = {}
+    local componentClasses = {}
 
     function collectionServicePlugin:componentRegistered(_, componentClass)
-        components[#components + 1] = componentClass
+        table.insert(componentClasses, componentClass)
     end
 
     function collectionServicePlugin:beforeSystemStart(core)
-        for _, componentClass in ipairs(components) do
+        for _, componentClass in ipairs(componentClasses) do
             local name = componentClass.className
 
             for _, instance in ipairs(CollectionService:GetTagged(name)) do
