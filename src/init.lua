@@ -6,4 +6,5 @@ return {
     System = require(script.System),
     interval = defineRegistration.interval,
     event = defineRegistration.event,
+    BuiltInPlugins = require(script.BuiltInPlugins),
 }
