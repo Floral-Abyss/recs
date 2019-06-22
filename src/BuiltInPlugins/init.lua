@@ -1,3 +1,3 @@
 return {
-	CollectionService = require(script.CollectionService),
+    CollectionService = require(script.CollectionService),
 }
