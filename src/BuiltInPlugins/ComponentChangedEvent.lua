@@ -6,6 +6,10 @@ function componentChangedEventPlugin:componentRegistered(core, componentClass)
     function componentClass.updateProperty(componentInstance, key, newValue)
         local oldValue = componentInstance[key]
 
+        if oldValue == newValue then
+            return
+        end
+
         componentInstance[key] = newValue
 
         componentInstance.raisePropertyChanged(key, newValue, oldValue)
