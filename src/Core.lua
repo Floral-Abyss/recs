@@ -317,7 +317,7 @@ end
     Throws if the identified component class isn't registered in the Core.
 
 ]]
-function Core:addComponent(entityId, componentIdentifier)
+function Core:addComponent(entityId, componentIdentifier, props)
     componentIdentifier = resolveComponentByIdentifier(componentIdentifier)
     local componentClass = self._componentClasses[componentIdentifier]
 
@@ -333,6 +333,12 @@ function Core:addComponent(entityId, componentIdentifier)
         else
             componentInstance = componentClass._create()
             componentInstances[entityId] = componentInstance
+
+            if props then
+                for k,v in pairs(props) do
+                    componentInstance[k] =  v
+                end
+            end
 
             self:__callPluginMethod("componentAdded", entityId, componentInstance)
 
