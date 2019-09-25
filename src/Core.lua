@@ -334,6 +334,7 @@ function Core:addComponent(entityId, componentIdentifier, props)
             componentInstance = componentClass._create()
             componentInstances[entityId] = componentInstance
 
+            -- apply props to new component
             if props then
                 for k,v in pairs(props) do
                     componentInstance[k] =  v
