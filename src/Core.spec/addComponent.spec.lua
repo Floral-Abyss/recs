@@ -39,7 +39,7 @@ return function()
 
         local entity = core:createEntity()
         local _, component = core:addComponent(entity, ComponentClass, {
-            a = 1
+            a = 1,
         })
 
         expect(component.a).to.equal(2)
