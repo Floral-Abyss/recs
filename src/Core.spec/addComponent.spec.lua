@@ -7,6 +7,7 @@ return function()
         generator = function(props)
             props = props or {
                 a = 0
+
             }
             return {
                 a = props.a + 1
