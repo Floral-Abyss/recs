@@ -111,9 +111,15 @@ return function()
         end)
 
         it("should pass props argument to generator", function()
+            local propsTable = {
+                aAdd = 1,
+                bSubstract = 1,
+            }
+            
             local class = defineComponent({
                 name = "Test",
                 generator = function(props)
+                    expect(props).to.equal(propsTable)
                     return {
                         a = 1 + props.aAdd,
                         b = 2 - props.bSubstract,
@@ -121,10 +127,7 @@ return function()
                 end,
             })
 
-            local component = class._create({
-                aAdd = 1,
-                bSubstract = 1,
-            })
+            local component = class._create(propsTable)
 
             expect(component.a).to.equal(2)
             expect(component.b).to.equal(1)
