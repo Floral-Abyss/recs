@@ -10,7 +10,7 @@ return function()
 
             }
             return {
-                a = props.a + 1
+                a = props.a + 1,
             }
         end
     })
