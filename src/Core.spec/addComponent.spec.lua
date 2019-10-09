@@ -38,7 +38,7 @@ return function()
         core:registerComponent(ComponentClass)
 
         local entity = core:createEntity()
-        local addedNew, component = core:addComponent(entity, ComponentClass, {
+        local _, component = core:addComponent(entity, ComponentClass, {
             a = 1
         })
 
