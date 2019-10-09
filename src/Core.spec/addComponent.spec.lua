@@ -6,7 +6,7 @@ return function()
         name = "TestComponent",
         generator = function(props)
             props = props or {
-                a = 0
+                a = 0,
 
             }
             return {
