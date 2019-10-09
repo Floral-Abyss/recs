@@ -50,8 +50,8 @@ local function defineComponent(args)
 
     local generator = args.generator
 
-    function definition._create()
-        local component = generator()
+    function definition._create(props)
+        local component = generator(props)
 
         if typeof(component) ~= "table" then
             error(errorFormats.nonTableDefaultPropsReturn:format(args.name, typeof(component)))

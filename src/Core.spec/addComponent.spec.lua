@@ -4,8 +4,14 @@ local defineComponent = require(script.Parent.Parent.defineComponent)
 return function()
     local ComponentClass = defineComponent({
         name = "TestComponent",
-        generator = function()
-            return {}
+        generator = function(props)
+            props = props or {
+                a = 0,
+
+            }
+            return {
+                a = props.a + 1,
+            }
         end
     })
 
@@ -25,6 +31,18 @@ return function()
         local addedNew, component = core:addComponent(entity, ComponentClass)
         expect(addedNew).to.equal(true)
         expect(component).to.be.ok()
+    end)
+
+    it("should add components with props", function()
+        local core = Core.new()
+        core:registerComponent(ComponentClass)
+
+        local entity = core:createEntity()
+        local _, component = core:addComponent(entity, ComponentClass, {
+            a = 1,
+        })
+
+        expect(component.a).to.equal(2)
     end)
 
     it("should return false plus the existing component if the component already exists", function()

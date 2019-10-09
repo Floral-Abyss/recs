@@ -109,5 +109,46 @@ return function()
             component:setA(2)
             expect(component.a).to.equal(2)
         end)
+
+        it("should pass props argument to generator", function()
+            local propsTable = {
+                aAdd = 1,
+                bSubstract = 1,
+            }
+            
+            local class = defineComponent({
+                name = "Test",
+                generator = function(props)
+                    expect(props).to.equal(propsTable)
+                    return {
+                        a = 1 + props.aAdd,
+                        b = 2 - props.bSubstract,
+                    }
+                end,
+            })
+
+            local component = class._create(propsTable)
+
+            expect(component.a).to.equal(2)
+            expect(component.b).to.equal(1)
+        end)
+
+        it("should accept any type as a props argument", function()
+            local class = defineComponent({
+                name = "Test",
+                generator = function(props)
+                    props = props or ""
+                    return {
+                        a = "foo" .. props,
+                    }
+                end,
+            })
+
+            local componentOne = class._create("bar")
+            local componentTwo = class._create()
+
+            expect(componentOne.a).to.equal("foobar")
+            expect(componentTwo.a).to.equal("foo")
+        end)
     end)
 end
