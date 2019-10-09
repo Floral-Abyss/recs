@@ -136,7 +136,7 @@ return function()
                 generator = function(props)
                     props = props or ""
                     return {
-                        a = "foo"..props
+                        a = "foo" .. props,
                     }
                 end,
             })
