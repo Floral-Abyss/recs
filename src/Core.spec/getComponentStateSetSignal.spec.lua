@@ -36,8 +36,8 @@ return function()
         end)
 
         local entity = core:createEntity()
-		core:addComponent(entity, ComponentClass)
-		core:setStateComponent(entity, ComponentClass, {})
+        core:addComponent(entity, ComponentClass)
+        core:setStateComponent(entity, ComponentClass, {})
 
         expect(callCount).to.equal(1)
     end)
@@ -55,8 +55,8 @@ return function()
             addedComponentInstance = signalComponentInstance
         end)
 
-		core:addComponent(entityId, ComponentClass)
-		local _, componentInstance = core:setStateComponent(entityId, ComponentClass, {})
+        core:addComponent(entityId, ComponentClass)
+        local _, componentInstance = core:setStateComponent(entityId, ComponentClass, {})
         expect(entityId).to.equal(addedEntityId)
         expect(componentInstance).to.equal(addedComponentInstance)
     end)
