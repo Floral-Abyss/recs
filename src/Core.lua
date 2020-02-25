@@ -24,6 +24,9 @@
     - componentAdded(Core, entityId, componentInstance): Called when a component
       instance is added to an entity. Called before the addition signal for that
       component has been fired.
+      componentStateSet(Core, entityId, componentInstance): Called when a component
+      instance has been changed using setComponentState. Called before the state set
+      signal for that component has been fired.
     - componentRemoving(Core, entityId, componentInstance): Called when a
       component instance is being removed from an entity, i.e. during entity
       destruction or when removing a component. Called after the removal signal
@@ -51,6 +54,7 @@ local errorMessages = {
     componentNotRegistered = "The component %q is not registered in this Core",
     componentClassAlreadyRegistered = "The component class %q is already registered in this Core",
     componentNotApplicable = "The component %q cannot be added to the entity %q of type %s",
+    componentNotFound = "The entity %q does not have component %q",
     singletonAlreadyAdded = "A singleton component for class %q is already added to this Core",
     singletonNotPresent = "The singleton component for class %q does not exist in this Core",
     systemNotRegistered = "The system %q is not registered in this Core",
@@ -109,6 +113,8 @@ function Core.new(plugins)
         _componentAddedSignals = {},
         -- A map of component class names to component removing signals.
         _componentRemovingSignals = {},
+        -- A map of component class names to component state set signals.
+        _componentStateSet = {},
         -- A map of signals to raise functions.
         _signalRaisers = {},
         -- An array of all the plugins that the Core is using.
@@ -174,11 +180,13 @@ function Core:registerComponent(componentClass)
 
     local addedSignal, raiseAdded = createSignal()
     local removingSignal, raiseRemoved = createSignal()
-
+    local stateSetSignal, raiseStateSet = createSignal()
     self._componentAddedSignals[name] = addedSignal
     self._componentRemovingSignals[name] = removingSignal
+    self._componentStateSet[name] = stateSetSignal
     self._signalRaisers[addedSignal] = raiseAdded
     self._signalRaisers[removingSignal] = raiseRemoved
+    self._signalRaisers[stateSetSignal] = raiseStateSet
 
     self:__callPluginMethod("componentRegistered", componentClass)
 end
@@ -393,6 +401,45 @@ end
 
 --[[
 
+    Given an entity ID, a component identifier, and a dictionary of fields
+    and values, overwrites the state of an existing component of the entity.
+    Returns a boolean that is true if the component's state was changed.
+
+    Throws if the identified component class has not been added to the entity
+    or if the identified component class isn't registered in the Core.
+
+]]
+function Core:setStateComponent(entityId, componentIdentifier, newState)
+    componentIdentifier = resolveComponentByIdentifier(componentIdentifier)
+    local componentClass = self._componentClasses[componentIdentifier]
+
+    if componentClass ~= nil then
+        local componentInstances = self._components[componentIdentifier]
+        local componentInstance = componentInstances[entityId]
+
+        if componentInstance ~= nil then
+
+            for attribute, value in pairs(newState) do
+                componentInstance[attribute] = value
+            end
+
+            self:__callPluginMethod("componentStateSet", entityId, componentInstance)
+
+            local stateSetSignal = self._componentStateSet[componentIdentifier]
+            self._signalRaisers[stateSetSignal](entityId, componentInstance)
+
+            return true, componentInstance
+        else
+            error(errorMessages.componentNotFound:format(entityId, componentIdentifier), 2)
+        end
+    else
+        error(errorMessages.componentNotRegistered:format(componentIdentifier), 2)
+    end
+end
+
+
+--[[
+
     Given an entity ID and a component identifier, removes the component
     instance from the entity. Returns true plus the removed component if there
     was a component instance attached to the entity, or false if there wasn't.
@@ -585,6 +632,26 @@ function Core:getComponentAddedSignal(componentIdentifier)
 
     return signal
 end
+
+--[[
+
+    Gets a signal that fires whenever a component's state is set. The
+    signal will be fired with the entity ID and the component that was set.
+
+    Throws if the identified component class isn't registered in the Core.
+
+]]
+function Core:getComponentStateSetSignal(componentIdentifier)
+    componentIdentifier = resolveComponentByIdentifier(componentIdentifier)
+
+    local signal = self._componentStateSet[componentIdentifier]
+    if signal == nil then
+        error(errorMessages.componentNotRegistered:format(componentIdentifier), 2)
+    end
+
+    return signal
+end
+
 
 --[[
 

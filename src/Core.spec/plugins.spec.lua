@@ -192,6 +192,70 @@ return function()
         end)
     end)
 
+    describe("componentStateSet", function()
+        it("should be called when a component's state is set", function()
+            local ComponentClass = defineComponent({
+                name = "TestComponent",
+                generator = function()
+                    return {}
+                end
+            })
+
+            local callCount = 0
+            local calledEntity = nil
+            local calledComponentInstance = nil
+
+            local plugin = {
+                componentStateSet = function(self, core, entityId, componentInstance)
+                    expect(componentInstance.className).to.equal("TestComponent")
+
+                    callCount = callCount + 1
+                    calledEntity = entityId
+                    calledComponentInstance = componentInstance
+                end,
+            }
+
+            local core = Core.new({ plugin })
+            core:registerComponent(ComponentClass)
+            local entity = core:createEntity()
+            core:addComponent(entity, ComponentClass)
+            local _, componentInstance = core:setStateComponent(entity, ComponentClass, {})
+
+            expect(callCount).to.equal(1)
+            expect(entity).to.equal(calledEntity)
+            expect(componentInstance).to.equal(calledComponentInstance)
+        end)
+
+        it("should be called before events are fired in addComponent", function()
+            local ComponentClass = defineComponent({
+                name = "TestComponent",
+                generator = function()
+                    return {}
+                end
+            })
+
+            local eventFired = false
+
+            local plugin = {
+                componentStateSet = function(self, core, entityId, componentInstance)
+                    expect(eventFired).to.equal(false)
+                end,
+            }
+
+            local core = Core.new({ plugin })
+            core:registerComponent(ComponentClass)
+
+            local signal = core:getComponentStateSetSignal(ComponentClass)
+            signal:connect(function()
+                eventFired = true
+            end)
+
+            local entity = core:createEntity()
+            core:addComponent(entity, ComponentClass)
+            core:setStateComponent(entity, ComponentClass, {})
+        end)
+    end)
+
     describe("componentRemoving", function()
         it("should be called when a component is removed from an entity", function()
             local ComponentClass = defineComponent({
