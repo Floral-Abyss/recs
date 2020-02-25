@@ -47,6 +47,19 @@ return function()
         expect(component.y).to.equal(0)
     end)
 
+    it("should remove fields when given Core.None", function()
+        local core = Core.new()
+        core:registerComponent(ComponentClass)
+
+        local entity = core:createEntity()
+        core:addComponent(entity, ComponentClass)
+        local success, component = core:setStateComponent(entity, ComponentClass, { x = 10, y = core.None })
+
+        expect(success).to.equal(true)
+        expect(component.x).to.equal(10)
+        expect(component.y).to.equal(nil)
+    end)
+
     it("should throw if the component has not been registered", function()
         local core = Core.new()
         local entity = core:createEntity()

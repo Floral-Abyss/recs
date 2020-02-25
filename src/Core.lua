@@ -121,6 +121,8 @@ function Core.new(plugins)
         _plugins = plugins or {},
     }, Core)
 
+    self.None = {}
+
     self:__callPluginMethod("coreInit")
 
     return self
@@ -420,7 +422,11 @@ function Core:setStateComponent(entityId, componentIdentifier, newState)
         if componentInstance ~= nil then
 
             for attribute, value in pairs(newState) do
-                componentInstance[attribute] = value
+                if value == self.None then
+                    componentInstance[attribute] = nil
+                else
+                    componentInstance[attribute] = value
+                end
             end
 
             self:__callPluginMethod("componentStateSet", entityId, componentInstance)
