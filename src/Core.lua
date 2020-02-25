@@ -334,7 +334,7 @@ function Core:addComponent(entityId, componentIdentifier, props)
             componentInstance = componentClass._create(props)
             componentInstances[entityId] = componentInstance
 
-            self:__callPluginMethod("componentAdded", entityId, componentInstance)
+            self:__callPluginMethod("componentAdded", entityId, componentInstance, props)
 
             local signal = self._componentAddedSignals[componentIdentifier]
             self._signalRaisers[signal](entityId, componentInstance)
