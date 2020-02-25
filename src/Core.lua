@@ -121,6 +121,9 @@ function Core.new(plugins)
         _plugins = plugins or {},
     }, Core)
 
+    -- A symbol that can be used in conjuction with Core:setStateComponent method
+    -- which will tell the Core to delete a field of a component if used as part of
+    -- the new given state.
     self.None = {}
 
     self:__callPluginMethod("coreInit")
