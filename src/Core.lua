@@ -21,7 +21,7 @@
     - coreInit(Core): Called when the Core initializes.
     - componentRegistered(Core, componentClass): Called when a component class
       is registered in the core.
-    - componentAdded(Core, entityId, componentInstance): Called when a component
+    - componentAdded(Core, entityId, componentInstance, props): Called when a component
       instance is added to an entity. Called before the addition signal for that
       component has been fired.
     - componentRemoving(Core, entityId, componentInstance): Called when a
