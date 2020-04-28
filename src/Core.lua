@@ -432,7 +432,7 @@ function Core:setStateComponent(entityId, componentIdentifier, newState)
                 end
             end
 
-            self:__callPluginMethod("componentStateSet", entityId, componentInstance)
+            self:__callPluginMethod("componentStateSet", entityId, componentIdentifier, componentInstance)
 
             local stateSetSignal = self._componentStateSet[componentIdentifier]
             self._signalRaisers[stateSetSignal](entityId, componentInstance)
