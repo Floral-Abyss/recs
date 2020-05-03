@@ -114,25 +114,31 @@ return function()
             local callCount = 0
             local calledEntity = nil
             local calledComponentInstance = nil
+            local calledComponentProps = nil
 
             local plugin = {
-                componentAdded = function(self, core, entityId, componentInstance)
+                componentAdded = function(self, core, entityId, componentInstance, componentProps)
                     expect(componentInstance.className).to.equal("TestComponent")
 
                     callCount = callCount + 1
                     calledEntity = entityId
                     calledComponentInstance = componentInstance
+                    calledComponentProps = componentProps
                 end,
             }
 
             local core = Core.new({ plugin })
             core:registerComponent(ComponentClass)
             local entity = core:createEntity()
-            local _, componentInstance = core:addComponent(entity, ComponentClass)
+            local props = {
+                foo = "bar",
+            }
+            local _, componentInstance = core:addComponent(entity, ComponentClass, props)
 
             expect(callCount).to.equal(1)
             expect(entity).to.equal(calledEntity)
             expect(componentInstance).to.equal(calledComponentInstance)
+            expect(props).to.equal(calledComponentProps)
         end)
 
         it("should be called before events are fired in addComponent", function()
