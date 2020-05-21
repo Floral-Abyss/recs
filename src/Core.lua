@@ -21,7 +21,7 @@
     - coreInit(Core): Called when the Core initializes.
     - componentRegistered(Core, componentClass): Called when a component class
       is registered in the core.
-    - componentAdded(Core, entityId, componentInstance): Called when a component
+    - componentAdded(Core, entityId, componentInstance, props): Called when a component
       instance is added to an entity. Called before the addition signal for that
       component has been fired.
       componentStateSet(Core, entityId, componentInstance): Called when a component
@@ -355,7 +355,7 @@ function Core:addComponent(entityId, componentIdentifier, props)
             componentInstance = componentClass._create(props)
             componentInstances[entityId] = componentInstance
 
-            self:__callPluginMethod("componentAdded", entityId, componentInstance)
+            self:__callPluginMethod("componentAdded", entityId, componentInstance, props)
 
             local signal = self._componentAddedSignals[componentIdentifier]
             self._signalRaisers[signal](entityId, componentInstance)
