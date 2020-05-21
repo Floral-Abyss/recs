@@ -226,7 +226,7 @@ return function()
             expect(componentInstance).to.equal(calledComponentInstance)
         end)
 
-        it("should be called before events are fired in addComponent", function()
+        it("should be called before events are fired in setStateComponent", function()
             local ComponentClass = defineComponent({
                 name = "TestComponent",
                 generator = function()
@@ -253,6 +253,37 @@ return function()
             local entity = core:createEntity()
             core:addComponent(entity, ComponentClass)
             core:setStateComponent(entity, ComponentClass, {})
+        end)
+    end)
+
+    describe("singletonSetState", function()
+        it("should be called when a singleton's state is set", function()
+            local mySingletonIdentifier = defineComponent({
+                name = "singleton",
+                generator = function()
+                    return {}
+                end
+            })
+
+            local callCount = 0
+            local calledSingletonIdentifier = nil
+            local calledComponentInstance = nil
+
+            local plugin = {
+                singletonStateSet = function(self, core, singletonIdentifier, singletonInstance)
+                    callCount = callCount + 1
+                    calledSingletonIdentifier = singletonIdentifier
+                    calledComponentInstance = singletonInstance
+                end,
+            }
+
+            local core = Core.new({ plugin })
+            core:addSingleton(mySingletonIdentifier)
+            local _, componentInstance = core:setStateSingleton(mySingletonIdentifier, {})
+
+            expect(callCount).to.equal(1)
+            expect(calledSingletonIdentifier).to.equal(mySingletonIdentifier)
+            expect(componentInstance).to.equal(calledComponentInstance)
         end)
     end)
 
