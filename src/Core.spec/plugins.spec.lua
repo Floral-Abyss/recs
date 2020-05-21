@@ -206,8 +206,8 @@ return function()
             local calledComponentInstance = nil
 
             local plugin = {
-                componentStateSet = function(self, core, entityId, componentInstance)
-                    expect(componentInstance.className).to.equal("TestComponent")
+                componentStateSet = function(self, core, entityId, componentIdentifier, componentInstance)
+                    expect(componentIdentifier).to.equal("TestComponent")
 
                     callCount = callCount + 1
                     calledEntity = entityId
