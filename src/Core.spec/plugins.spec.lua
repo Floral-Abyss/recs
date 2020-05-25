@@ -198,6 +198,101 @@ return function()
         end)
     end)
 
+    describe("componentStateSet", function()
+        it("should be called when a component's state is set", function()
+            local ComponentClass = defineComponent({
+                name = "TestComponent",
+                generator = function()
+                    return {}
+                end
+            })
+
+            local callCount = 0
+            local calledEntity = nil
+            local calledComponentInstance = nil
+
+            local plugin = {
+                componentStateSet = function(self, core, entityId, componentIdentifier, componentInstance)
+                    expect(componentIdentifier).to.equal("TestComponent")
+
+                    callCount = callCount + 1
+                    calledEntity = entityId
+                    calledComponentInstance = componentInstance
+                end,
+            }
+
+            local core = Core.new({ plugin })
+            core:registerComponent(ComponentClass)
+            local entity = core:createEntity()
+            core:addComponent(entity, ComponentClass)
+            local _, componentInstance = core:setStateComponent(entity, ComponentClass, {})
+
+            expect(callCount).to.equal(1)
+            expect(entity).to.equal(calledEntity)
+            expect(componentInstance).to.equal(calledComponentInstance)
+        end)
+
+        it("should be called before events are fired in setStateComponent", function()
+            local ComponentClass = defineComponent({
+                name = "TestComponent",
+                generator = function()
+                    return {}
+                end
+            })
+
+            local eventFired = false
+
+            local plugin = {
+                componentStateSet = function(self, core, entityId, componentInstance)
+                    expect(eventFired).to.equal(false)
+                end,
+            }
+
+            local core = Core.new({ plugin })
+            core:registerComponent(ComponentClass)
+
+            local signal = core:getComponentStateSetSignal(ComponentClass)
+            signal:connect(function()
+                eventFired = true
+            end)
+
+            local entity = core:createEntity()
+            core:addComponent(entity, ComponentClass)
+            core:setStateComponent(entity, ComponentClass, {})
+        end)
+    end)
+
+    describe("singletonSetState", function()
+        it("should be called when a singleton's state is set", function()
+            local mySingletonIdentifier = defineComponent({
+                name = "singleton",
+                generator = function()
+                    return {}
+                end
+            })
+
+            local callCount = 0
+            local calledSingletonIdentifier = nil
+            local calledComponentInstance = nil
+
+            local plugin = {
+                singletonStateSet = function(self, core, singletonIdentifier, singletonInstance)
+                    callCount = callCount + 1
+                    calledSingletonIdentifier = singletonIdentifier
+                    calledComponentInstance = singletonInstance
+                end,
+            }
+
+            local core = Core.new({ plugin })
+            core:addSingleton(mySingletonIdentifier)
+            local _, componentInstance = core:setStateSingleton(mySingletonIdentifier, {})
+
+            expect(callCount).to.equal(1)
+            expect(calledSingletonIdentifier).to.equal(mySingletonIdentifier)
+            expect(componentInstance).to.equal(calledComponentInstance)
+        end)
+    end)
+
     describe("componentRemoving", function()
         it("should be called when a component is removed from an entity", function()
             local ComponentClass = defineComponent({
