@@ -2,8 +2,8 @@ local createSignal = require(script.Parent.Parent.createSignal)
 
 local componentChangedEventPlugin = {}
 
-function componentChangedEventPlugin:componentRegistered(core, componentClass)
-    function componentClass.updateProperty(componentInstance, key, newValue)
+local function addUpdateMethod(core, component)
+    function component.updateProperty(componentInstance, key, newValue)
         local oldValue = componentInstance[key]
 
         if oldValue == newValue then
@@ -16,7 +16,20 @@ function componentChangedEventPlugin:componentRegistered(core, componentClass)
     end
 end
 
+function componentChangedEventPlugin:componentRegistered(core, componentClass)
+    addUpdateMethod(core, componentClass)
+end
+
 function componentChangedEventPlugin:componentAdded(core, entityId, componentInstance)
+    local propertyChangedSignal, raisePropertyChanged = createSignal()
+
+    componentInstance.changed = propertyChangedSignal
+    componentInstance.raisePropertyChanged = raisePropertyChanged
+end
+
+function componentChangedEventPlugin:singletonAdded(core, componentInstance)
+    addUpdateMethod(core, componentInstance)
+
     local propertyChangedSignal, raisePropertyChanged = createSignal()
 
     componentInstance.changed = propertyChangedSignal
