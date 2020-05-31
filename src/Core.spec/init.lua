@@ -52,6 +52,23 @@ return function()
         end)
     end)
 
+    describe("getRegisteredComponents", function()
+        local ComponentClass = defineComponent({
+            name = "TestComponent",
+            generator = function()
+                return {}
+            end
+        })
+
+        it("should return registered components", function()
+            local core = Core.new()
+            core:registerComponent(ComponentClass)
+
+            local registeredComponents = core:getRegisteredComponents()
+            expect(registeredComponents.TestComponent).to.equal(ComponentClass)
+        end)
+    end)
+
     describe("addSingleton", function()
         local SingletonClass = defineComponent({
             name = "TestSingleton",

@@ -2,4 +2,6 @@
 *.rbxlx
 *.rbxm
 *.rbxmx
+*.rbxl.lock
+*.rbxlx.lock
 packages

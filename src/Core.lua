@@ -222,6 +222,18 @@ end
 
 --[[
 
+    Returns all components classes registered in the Core.
+    The table is a map of name -> class.
+
+    Do not mutate the returned value of this function.
+
+]]
+function Core:getRegisteredComponents()
+    return self._componentClasses
+end
+
+--[[
+
     Creates a new entity and returns an identifier for the entity that can be
     used in calls to other Core methods.
 
