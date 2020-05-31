@@ -222,7 +222,8 @@ end
 
 --[[
 
-    Returns all components classes registered to the in the Core.
+    Returns all components classes registered in the Core.
+    The table is a map of name -> class.
 
     Do not mutate the returned value of this function.
 

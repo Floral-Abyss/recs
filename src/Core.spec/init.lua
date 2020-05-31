@@ -52,7 +52,7 @@ return function()
         end)
     end)
 
-    describe("getComponents", function()
+    describe("getRegisteredComponents", function()
         local ComponentClass = defineComponent({
             name = "TestComponent",
             generator = function()
@@ -60,7 +60,7 @@ return function()
             end
         })
 
-        it("should succeed when called", function()
+        it("should return registered components", function()
             local core = Core.new()
             core:registerComponent(ComponentClass)
             core:getRegisteredComponents()
