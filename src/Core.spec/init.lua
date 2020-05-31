@@ -52,6 +52,21 @@ return function()
         end)
     end)
 
+    describe("getComponents", function()
+        local ComponentClass = defineComponent({
+            name = "TestComponent",
+            generator = function()
+                return {}
+            end
+        })
+
+        it("should succeed when called", function()
+            local core = Core.new()
+            core:registerComponent(ComponentClass)
+            core:getRegisteredComponents()
+        end)
+    end)
+
     describe("addSingleton", function()
         local SingletonClass = defineComponent({
             name = "TestSingleton",
