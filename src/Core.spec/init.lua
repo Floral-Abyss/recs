@@ -63,7 +63,9 @@ return function()
         it("should return registered components", function()
             local core = Core.new()
             core:registerComponent(ComponentClass)
-            core:getRegisteredComponents()
+
+            local registeredComponents = core:getRegisteredComponents()
+            expect(registeredComponents.TestComponent).to.equal(ComponentClass)
         end)
     end)
 
