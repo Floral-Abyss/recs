@@ -21,7 +21,7 @@ local function createSignal()
 
     local function fire(...)
         for listener, _ in pairs(listeners) do
-            coroutine.wrap(listener)(...)
+            task.spawn(listener, ...)
         end
     end
 
