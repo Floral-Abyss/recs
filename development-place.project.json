@@ -11,9 +11,15 @@
     "ReplicatedStorage": {
       "$className": "ReplicatedStorage",
       "Packages": {
-        "$path": "packages",
+        "$className": "Folder",
         "RECS": {
           "$path": "src"
+        },
+        "TestEZ": {
+          "$path": "submodules/testez/src"
+        },
+        "t": {
+          "$path": "submodules/t/lib"
         }
       }
     },
