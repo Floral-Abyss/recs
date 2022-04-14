@@ -1,3 +1,22 @@
+--!strict
+
+--[[
+    Type Definitions
+]]
+
+type AllowedFunctionValue = (...any) -> ...any
+type AllowedTableValue =
+    { destroy: AllowedFunctionValue } |
+    { Destroy: AllowedFunctionValue } |
+    { disconnect: AllowedFunctionValue } |
+    { Disconnect: AllowedFunctionValue } |
+    { clean: AllowedFunctionValue }
+type AllowedValues = AllowedFunctionValue | AllowedTableValue | Instance | RBXScriptConnection
+
+--[[
+    Implementation
+]]
+
 local errorMessages = {
     cannotDestroy = "Cleaner cannot destroy %q of type %s (key %q)",
     overridingKey = "Cannot override built-in method %s",
@@ -5,11 +24,11 @@ local errorMessages = {
 
 local cleanerMethods = {}
 
-local function hasFunction(table, key)
+local function hasFunction(table: { [any]: any }, key: string): boolean
     return table[key] ~= nil and typeof(table[key]) == "function"
 end
 
-local function canDestroy(value)
+local function canDestroy(value: any): boolean
     if typeof(value) == "function" then
         return true
     elseif typeof(value) == "Instance" then
@@ -31,7 +50,7 @@ local function canDestroy(value)
     return false
 end
 
-cleanerMethods.give = function(self, key, value)
+cleanerMethods.give = function(self, key: string, value: AllowedValues)
     assert(cleanerMethods[key] == nil, errorMessages.overridingKey:format(tostring(key)))
 
     if value ~= nil then
