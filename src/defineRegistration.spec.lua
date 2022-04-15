@@ -1,3 +1,5 @@
+--!strict
+
 local defineRegistration = require(script.Parent.defineRegistration)
 local System = require(script.Parent.System)
 

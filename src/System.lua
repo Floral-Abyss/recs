@@ -1,3 +1,5 @@
+--!strict
+
 local createCleaner = require(script.Parent.createCleaner)
 
 local System = {}
@@ -12,8 +14,7 @@ function System.__isSystemClass(systemClass)
     return getmetatable(systemClass) == System
 end
 
--- luacheck: ignore self
-function System:extend(systemName)
+function System:extend(systemName: string)
     local systemClass = setmetatable({
         name = systemName,
     }, System)

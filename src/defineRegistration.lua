@@ -1,3 +1,5 @@
+--!strict
+
 --[[
 
     defineRegistration provides constructors for stepper definitions, which are
@@ -33,7 +35,7 @@ local errorMessages = {
     notASystemClass = "the element at index %d is not a system class",
 }
 
-local function interval(intervalLength, systemsArray)
+local function interval(intervalLength: number, systemsArray)
     assert(typeof(intervalLength == "number"), errorMessages.nonNumberInterval:format(typeof(intervalLength)))
     assert(intervalLength >= 0, errorMessages.nonPositiveInterval:format(intervalLength))
     assert(typeof(systemsArray) == "table", errorMessages.nonTable:format(typeof(systemsArray)))
@@ -51,7 +53,7 @@ local function interval(intervalLength, systemsArray)
     }
 end
 
-local function event(eventObject, systemsArray)
+local function event(eventObject: RBXScriptSignal, systemsArray)
     assert(typeof(eventObject) == "RBXScriptSignal", errorMessages.nonEvent:format(typeof(eventObject)))
     assert(typeof(systemsArray) == "table", errorMessages.nonTable:format(typeof(systemsArray)))
 

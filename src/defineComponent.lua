@@ -1,3 +1,5 @@
+--!strict
+
 --[[
 
     defineComponent is a utility function for defining a component. Given an
@@ -27,6 +29,13 @@
 
 ]]
 
+type ComponentArgs = {
+    className: string,
+    generator: (...any) -> any,
+    entityFilter: (EntityId) -> boolean,
+}
+
+local TypeDefinitions = require(script.Parent.TypeDefinitions)
 local t = require(script.Parent.Parent.t)
 
 local isComponentArgs = t.strictInterface({
@@ -40,7 +49,7 @@ local errorFormats = {
         "The defaultProps generator for the %s component must return a table, but it returned a %s",
 }
 
-local function defineComponent(args)
+local function defineComponent(args: ComponentArgs): TypeDefinitions.ComponentClass
     assert(isComponentArgs(args))
 
     local definition = {}
@@ -50,7 +59,7 @@ local function defineComponent(args)
 
     local generator = args.generator
 
-    function definition._create(props)
+    function definition._create(props): any
         local component = generator(props)
 
         if typeof(component) ~= "table" then
