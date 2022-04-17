@@ -29,7 +29,6 @@ function System:extend(systemName)
         return systemInstance
     end
 
-    setmetatable(systemClass, System)
     return systemClass
 end
 
