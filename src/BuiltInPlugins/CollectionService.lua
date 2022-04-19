@@ -2,7 +2,7 @@
 
 local TypeDefinitions = require(script.Parent.Parent.TypeDefinitions)
 
-type ComponentClasses = { [number]: TypeDefinitions.ComponentClass }
+type ComponentClasses = {TypeDefinitions.ComponentClass}
 
 local CollectionService = game:GetService("CollectionService")
 
