@@ -9,12 +9,12 @@ local createCleaner = require(script.Parent.Parent.createCleaner)
 local componentCleaner = {}
 
 function componentCleaner:componentAdded(core, entityId, componentInstance)
-	componentInstance._cleaner = createCleaner()
+	componentInstance.maid = createCleaner()
 end
 
 function componentCleaner:componentRemoving(core, entityId, componentInstance)
-	componentInstance._cleaner:clean()
-	componentInstance._cleaner = nil
+	componentInstance.maid:clean()
+	componentInstance.maid = nil
 end
 
 return componentCleaner
