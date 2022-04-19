@@ -16,7 +16,7 @@ local function createCollectionServicePlugin()
 
     function collectionServicePlugin:beforeSystemStart(core)
         for _, componentClass: TypeDefinitions.ComponentClass in ipairs(componentClasses) do
-            local name: string = componentClass.className
+            local name = componentClass.className
 
             for _, instance: Instance in ipairs(CollectionService:GetTagged(name)) do
                 core:addComponent(instance, name)
