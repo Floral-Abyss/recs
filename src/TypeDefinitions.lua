@@ -20,9 +20,4 @@ export type StepperDefinition = {
 
 export type Steppers = { [number]: StepperDefinition }
 
-export type SystemClass = {}
-
-export type Systems = {
-}
-
 return nil
