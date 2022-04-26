@@ -1,3 +1,5 @@
+--!strict
+
 local createSignal = require(script.Parent.createSignal)
 
 return function()

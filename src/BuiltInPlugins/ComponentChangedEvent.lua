@@ -1,3 +1,6 @@
+--!strict
+
+local TypeDefinitions = require(script.Parent.Parent.TypeDefinitions)
 local createSignal = require(script.Parent.Parent.createSignal)
 
 local componentChangedEventPlugin = {}
@@ -20,7 +23,7 @@ function componentChangedEventPlugin:componentRegistered(core, componentClass)
     addUpdateMethod(core, componentClass)
 end
 
-function componentChangedEventPlugin:componentAdded(core, entityId, componentInstance)
+function componentChangedEventPlugin:componentAdded(core, entityId: TypeDefinitions.EntityId, componentInstance)
     local propertyChangedSignal, raisePropertyChanged = createSignal()
 
     componentInstance.changed = propertyChangedSignal

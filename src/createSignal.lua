@@ -1,3 +1,5 @@
+--!strict
+
 local function createSignal()
     local listeners = {}
     local signal = {}

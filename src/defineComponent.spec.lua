@@ -1,3 +1,5 @@
+--!strict
+
 local defineComponent = require(script.Parent.defineComponent)
 
 return function()
@@ -115,7 +117,7 @@ return function()
                 aAdd = 1,
                 bSubstract = 1,
             }
-            
+
             local class = defineComponent({
                 name = "Test",
                 generator = function(props)

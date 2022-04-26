@@ -1,28 +1,34 @@
+--!strict
+
+local TypeDefinitions = require(script.Parent.Parent.TypeDefinitions)
+
+type ComponentClasses = {TypeDefinitions.ComponentClass}
+
 local CollectionService = game:GetService("CollectionService")
 
 local function createCollectionServicePlugin()
     local collectionServicePlugin = {}
-    local componentClasses = {}
+    local componentClasses: ComponentClasses = {}
 
     function collectionServicePlugin:componentRegistered(_, componentClass)
         table.insert(componentClasses, componentClass)
     end
 
     function collectionServicePlugin:beforeSystemStart(core)
-        for _, componentClass in ipairs(componentClasses) do
+        for _, componentClass: TypeDefinitions.ComponentClass in ipairs(componentClasses) do
             local name = componentClass.className
 
-            for _, instance in ipairs(CollectionService:GetTagged(name)) do
+            for _, instance: Instance in ipairs(CollectionService:GetTagged(name)) do
                 core:addComponent(instance, name)
             end
 
             local instanceAddedSignal = CollectionService:GetInstanceAddedSignal(name)
-            instanceAddedSignal:Connect(function(instance)
+            instanceAddedSignal:Connect(function(instance: Instance)
                 core:addComponent(instance, name)
             end)
 
             local instanceRemovedSignal = CollectionService:GetInstanceRemovedSignal(name)
-            instanceRemovedSignal:Connect(function(instance)
+            instanceRemovedSignal:Connect(function(instance: Instance)
                 core:removeComponent(instance, name)
             end)
         end

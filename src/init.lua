@@ -1,3 +1,5 @@
+--!strict
+
 local defineRegistration = require(script.defineRegistration)
 
 return {

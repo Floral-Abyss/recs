@@ -1,3 +1,5 @@
+--!strict
+
 --[[
 
     A RECS Core is the root of a RECS setup. It contains systems, entities, and
@@ -42,6 +44,7 @@
 
 local HttpService = game:GetService("HttpService")
 
+local TypeDefinitions = require(script.Parent.TypeDefinitions)
 local EventStepper = require(script.Parent.EventStepper)
 local TimeStepper = require(script.Parent.TimeStepper)
 local createSignal = require(script.Parent.createSignal)
@@ -65,7 +68,7 @@ local errorMessages = {
     components internally.
 
 ]]
-local function resolveComponentByIdentifier(componentIdentifier)
+local function resolveComponentByIdentifier(componentIdentifier: TypeDefinitions.ComponentIdentifier)
     if typeof(componentIdentifier) == "string" then
         return componentIdentifier
     elseif typeof(componentIdentifier) == "table" then
@@ -128,7 +131,7 @@ end
     Plugin methods are called with the Core as the first argument.
 
 ]]
-function Core:__callPluginMethod(methodName, ...)
+function Core:__callPluginMethod(methodName: string, ...)
     for _, plugin in ipairs(self._plugins) do
         if plugin[methodName] ~= nil then
             plugin[methodName](plugin, self, ...)
@@ -143,7 +146,10 @@ end
     Throws if this is not the case.
 
 ]]
-function Core:__checkIfCanAddComponentToEntity(componentClass, entityId)
+function Core:__checkIfCanAddComponentToEntity(
+    componentClass: TypeDefinitions.ComponentClass,
+    entityId: TypeDefinitions.EntityId
+)
     if componentClass.entityFilter ~= nil and not componentClass.entityFilter(entityId) then
         error(
             errorMessages.componentNotApplicable:format(
@@ -160,7 +166,7 @@ end
     component class with the same name has already been registered.
 
 ]]
-function Core:registerComponent(componentClass)
+function Core:registerComponent(componentClass: TypeDefinitions.ComponentClass)
     local name = componentClass.className
 
     if self._componentClasses[name] ~= nil then
@@ -193,7 +199,7 @@ end
     Throws if one of the component classes has already been registered in the Core.
 
 ]]
-function Core:registerComponentsInInstance(rootInstance)
+function Core:registerComponentsInInstance(rootInstance: Instance)
     for _, child in ipairs(rootInstance:GetChildren()) do
         if child:IsA("ModuleScript") then
             self:registerComponent(require(child))
@@ -210,7 +216,7 @@ end
     Throws if the component class has not been registered.
 
 ]]
-function Core:getComponentClass(className)
+function Core:getComponentClass(className: TypeDefinitions.ClassName): TypeDefinitions.ComponentClass
     local componentClass = self._componentClasses[className]
 
     if componentClass == nil then
@@ -228,7 +234,7 @@ end
     Do not mutate the returned value of this function.
 
 ]]
-function Core:getRegisteredComponents()
+function Core:getRegisteredComponents(): { [number]: TypeDefinitions.ComponentClass }
     return self._componentClasses
 end
 
@@ -242,7 +248,7 @@ end
     as-is.
 
 ]]
-function Core:createEntity()
+function Core:createEntity(): string
     -- The Core is using a hash map for storing component records.
     -- HttpService::GenerateGUID may be too slow for use, and can be replaced
     -- later if need be.
@@ -256,10 +262,10 @@ end
     this Core, or was destroyed already.
 
 ]]
-function Core:destroyEntity(entityId)
+function Core:destroyEntity(entityId: TypeDefinitions.EntityId)
     -- Call plugin methods and fire removal signals before disturbing the
     -- actual component.
-    for componentClassName, componentInstances in pairs(self._components) do
+    for componentClassName: TypeDefinitions.ClassName, componentInstances in pairs(self._components) do
         local componentInstance = componentInstances[entityId]
 
         if componentInstance ~= nil then
@@ -284,7 +290,7 @@ end
     Throws if the identified component class isn't registered in the Core.
 
 ]]
-function Core:getComponent(entityId, componentIdentifier)
+function Core:getComponent(entityId: TypeDefinitions.EntityId, componentIdentifier: TypeDefinitions.ComponentIdentifier)
     componentIdentifier = resolveComponentByIdentifier(componentIdentifier)
     local componentInstances = self._components[componentIdentifier]
 
@@ -303,7 +309,10 @@ end
     Throws if the identified component class isn't registered in the Core.
 
 ]]
-function Core:hasComponent(entityId, componentIdentifier)
+function Core:hasComponent(
+    entityId: TypeDefinitions.EntityId,
+    componentIdentifier: TypeDefinitions.ComponentIdentifier
+): boolean
     componentIdentifier = resolveComponentByIdentifier(componentIdentifier)
 
     -- We could implement this in terms of getComponent but then the stack level
@@ -329,7 +338,11 @@ end
     Throws if the identified component class isn't registered in the Core.
 
 ]]
-function Core:addComponent(entityId, componentIdentifier, props)
+function Core:addComponent(
+    entityId: TypeDefinitions.EntityId,
+    componentIdentifier: TypeDefinitions.ComponentIdentifier,
+    props
+): (boolean, any)
     componentIdentifier = resolveComponentByIdentifier(componentIdentifier)
     local componentClass = self._componentClasses[componentIdentifier]
 
@@ -368,7 +381,7 @@ end
     Throws if any of the identified component classes aren't registered in the Core.
 
 ]]
-function Core:batchAddComponents(entityId, ...)
+function Core:batchAddComponents(entityId: TypeDefinitions.EntityId, ...)
     local createdInstances = {}
     local identifierCount = select("#", ...)
 
@@ -412,7 +425,10 @@ end
     Throws if the identified component class isn't registered in the Core.
 
 ]]
-function Core:removeComponent(entityId, componentIdentifier)
+function Core:removeComponent(
+    entityId: TypeDefinitions.EntityId,
+    componentIdentifier: TypeDefinitions.ComponentIdentifier
+): (boolean, any?)
     componentIdentifier = resolveComponentByIdentifier(componentIdentifier)
     local componentInstances = self._components[componentIdentifier]
 
@@ -445,7 +461,7 @@ end
     Throws if any of the identified component classes aren't registered in the Core.
 
 ]]
-function Core:batchRemoveComponents(entityId, ...)
+function Core:batchRemoveComponents(entityId: TypeDefinitions.EntityId, ...)
     local toRemove = {}
     local identifierCount = select("#", ...)
 
@@ -548,7 +564,7 @@ function Core:components(...)
         -- Since maps have no notion of size, we have to track it separately,
         -- but it should be pretty easy to do this sort of bookkeeping in
         -- addComponent and removeComponent, and it shouldn't desynchronize.
-        for entityId, firstComponent in pairs(firstMap) do
+        for entityId: TypeDefinitions.EntityId, firstComponent in pairs(firstMap) do
             local entityHasAllComponents = true
 
             result[1] = entityId
@@ -587,7 +603,7 @@ end
     Throws if the identified component class isn't registered in the Core.
 
 ]]
-function Core:getComponentAddedSignal(componentIdentifier)
+function Core:getComponentAddedSignal(componentIdentifier: TypeDefinitions.ComponentIdentifier)
     componentIdentifier = resolveComponentByIdentifier(componentIdentifier)
 
     local signal = self._componentAddedSignals[componentIdentifier]
@@ -606,7 +622,7 @@ end
     Throws if the identified component class isn't registered in the Core.
 
 ]]
-function Core:getComponentRemovingSignal(componentIdentifier)
+function Core:getComponentRemovingSignal(componentIdentifier: TypeDefinitions.ComponentIdentifier)
     componentIdentifier = resolveComponentByIdentifier(componentIdentifier)
 
     local signal = self._componentRemovingSignals[componentIdentifier]
@@ -624,7 +640,7 @@ end
     Throws if the singleton component already exists on the Core.
 
 ]]
-function Core:addSingleton(componentClass)
+function Core:addSingleton(componentClass: TypeDefinitions.ComponentClass)
     local singletonIdentifier = componentClass.className
 
     if self._singletons[singletonIdentifier] == nil then
@@ -647,7 +663,7 @@ end
     Throws if the singleton doesn't exist on the Core.
 
 ]]
-function Core:getSingleton(componentIdentifier)
+function Core:getSingleton(componentIdentifier: TypeDefinitions.ComponentIdentifier)
     componentIdentifier = resolveComponentByIdentifier(componentIdentifier)
 
     local singleton = self._singletons[componentIdentifier]
@@ -701,7 +717,7 @@ end
     Throws if one of the system classes has already been registered in the Core.
 
 ]]
-function Core:registerSystemsInInstance(rootInstance)
+function Core:registerSystemsInInstance(rootInstance: Instance)
     for _, child in ipairs(rootInstance:GetChildren()) do
         if child:IsA("ModuleScript") then
             self:registerSystem(require(child))

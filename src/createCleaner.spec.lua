@@ -1,3 +1,5 @@
+--!strict
+
 local createCleaner = require(script.Parent.createCleaner)
 
 return function()
