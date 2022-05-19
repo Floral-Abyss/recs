@@ -359,7 +359,7 @@ function Core:addComponent(
             componentInstance = componentClass._create(props)
             componentInstances[entityId] = componentInstance
 
-            self:__callPluginMethod("componentAdded", entityId, componentInstance, props)
+            self:__callPluginMethod("componentAdded", entityId, componentInstance, props, componentClass)
 
             local signal = self._componentAddedSignals[componentIdentifier]
             self._signalRaisers[signal](entityId, componentInstance)
@@ -382,7 +382,7 @@ end
 
 ]]
 function Core:batchAddComponents(entityId: TypeDefinitions.EntityId, ...)
-    local createdInstances = {}
+    local components = {}
     local identifierCount = select("#", ...)
 
     for i = 1, identifierCount do
@@ -403,16 +403,19 @@ function Core:batchAddComponents(entityId: TypeDefinitions.EntityId, ...)
         -- components if they exist.
         if componentInstances[entityId] == nil then
             local componentInstance = componentClass._create()
-            createdInstances[convertedIdentifier] = componentInstance
+            components[convertedIdentifier] = {
+                class = componentClass,
+                instance = componentInstance,
+            }
             componentInstances[entityId] = componentInstance
         end
     end
 
-    for identifier, componentInstance in pairs(createdInstances) do
-        self:__callPluginMethod("componentAdded", entityId, componentInstance)
+    for identifier, component in pairs(components) do
+        self:__callPluginMethod("componentAdded", entityId, component.instance, nil, component.class)
 
         local addedSignal = self._componentAddedSignals[identifier]
-        self._signalRaisers[addedSignal](entityId, componentInstance)
+        self._signalRaisers[addedSignal](entityId, component.instance)
     end
 end
 
