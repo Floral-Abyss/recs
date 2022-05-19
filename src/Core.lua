@@ -650,7 +650,7 @@ function Core:addSingleton(componentClass: TypeDefinitions.ComponentClass)
         local singleton = componentClass._create()
         self._singletons[singletonIdentifier] = singleton
 
-        self:__callPluginMethod("singletonAdded", singleton)
+        self:__callPluginMethod("singletonAdded", singleton, componentClass)
 
         return singleton
     else
