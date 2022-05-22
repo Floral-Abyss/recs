@@ -1,6 +1,6 @@
 # RECS
 
-An entity component system written in [Luau](https://luau-lang.org/), for use in [Roblox](https://create.roblox.com/).
+An entity component system library written in [Luau](https://luau-lang.org/), for use in [Roblox](https://create.roblox.com/).
 
 ## RobloxComponentSystem
 
