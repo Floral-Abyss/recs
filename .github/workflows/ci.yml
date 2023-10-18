@@ -1,0 +1,38 @@
+
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  stylua:
+    name: StyLua
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v3
+
+    - name: Run StyLua
+      uses: JohnnyMorganz/stylua-action@v3
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        version: "^0.17.0"
+        args: --check src
+  selene:
+    name: Selene
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - uses: ok-nick/setup-aftman@v0.4.2
+      with:
+        version: v0.2.7
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Run Selene
+      run: selene src
