@@ -6,11 +6,11 @@
 
 type AllowedFunctionValue = (...any) -> ...any
 type AllowedTableValue =
-    { destroy: AllowedFunctionValue } |
-    { Destroy: AllowedFunctionValue } |
-    { disconnect: AllowedFunctionValue } |
-    { Disconnect: AllowedFunctionValue } |
-    { clean: AllowedFunctionValue }
+    { destroy: AllowedFunctionValue }
+    | { Destroy: AllowedFunctionValue }
+    | { disconnect: AllowedFunctionValue }
+    | { Disconnect: AllowedFunctionValue }
+    | { clean: AllowedFunctionValue }
 type AllowedValues = AllowedFunctionValue | AllowedTableValue | Instance | RBXScriptConnection
 
 --[[
@@ -35,10 +35,11 @@ local function canDestroy(value: any): boolean
         return true
     elseif typeof(value) == "RBXScriptConnection" then
         return true
-    elseif typeof(value) == "table"
+    elseif
+        typeof(value) == "table"
         and getmetatable(value) ~= nil
-        and getmetatable(value).__index == cleanerMethods then
-
+        and getmetatable(value).__index == cleanerMethods
+    then
         return true
     elseif typeof(value) == "table" then
         return hasFunction(value, "destroy")
@@ -68,10 +69,11 @@ cleanerMethods.clean = function(self)
             value:Destroy()
         elseif typeof(value) == "RBXScriptConnection" then
             value:Disconnect()
-        elseif typeof(value) == "table"
+        elseif
+            typeof(value) == "table"
             and getmetatable(value) ~= nil
-            and getmetatable(value).__index == cleanerMethods then
-
+            and getmetatable(value).__index == cleanerMethods
+        then
             value:clean()
         elseif typeof(value) == "table" then
             if value.destroy ~= nil then

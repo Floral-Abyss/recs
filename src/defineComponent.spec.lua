@@ -13,7 +13,7 @@ return function()
     it("should create component classes with a name and creator", function()
         local component = defineComponent({
             name = "Test",
-            generator = function() end
+            generator = function() end,
         })
 
         expect(component.className).to.equal("Test")
@@ -30,8 +30,7 @@ return function()
         expect(function()
             defineComponent({
                 name = 123,
-                generator = function()
-                end,
+                generator = function() end,
             })
         end).to.throw()
     end)

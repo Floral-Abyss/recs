@@ -75,10 +75,7 @@ local function resolveComponentByIdentifier(componentIdentifier: TypeDefinitions
         -- Assume it's a component class for efficiency / zoomies
         return componentIdentifier.className
     else
-        error(errorMessages.invalidIdentifier:format(
-            tostring(componentIdentifier),
-            typeof(componentIdentifier)),
-        3)
+        error(errorMessages.invalidIdentifier:format(tostring(componentIdentifier), typeof(componentIdentifier)), 3)
     end
 end
 
@@ -152,11 +149,9 @@ function Core:__checkIfCanAddComponentToEntity(
 )
     if componentClass.entityFilter ~= nil and not componentClass.entityFilter(entityId) then
         error(
-            errorMessages.componentNotApplicable:format(
-                componentClass.className,
-                tostring(entityId),
-                typeof(entityId)),
-        3)
+            errorMessages.componentNotApplicable:format(componentClass.className, tostring(entityId), typeof(entityId)),
+            3
+        )
     end
 end
 
@@ -170,9 +165,7 @@ function Core:registerComponent(componentClass: TypeDefinitions.ComponentClass)
     local name = componentClass.className
 
     if self._componentClasses[name] ~= nil then
-        error(errorMessages.componentClassAlreadyRegistered:format(
-            name
-        ), 2)
+        error(errorMessages.componentClassAlreadyRegistered:format(name), 2)
     end
 
     self._componentClasses[name] = componentClass

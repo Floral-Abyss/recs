@@ -36,7 +36,7 @@ local errorMessages = {
 }
 
 local function interval(intervalLength: number, systemsArray)
-    assert(typeof(intervalLength == "number"), errorMessages.nonNumberInterval:format(typeof(intervalLength)))
+    assert(typeof(intervalLength) == "number", errorMessages.nonNumberInterval:format(typeof(intervalLength)))
     assert(intervalLength >= 0, errorMessages.nonPositiveInterval:format(intervalLength))
     assert(typeof(systemsArray) == "table", errorMessages.nonTable:format(typeof(systemsArray)))
 

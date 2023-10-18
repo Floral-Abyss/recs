@@ -33,8 +33,7 @@ return function()
 
             it("should accept connections", function()
                 local event = Instance.new("BindableEvent")
-                local connection = event.Event:Connect(function()
-                end)
+                local connection = event.Event:Connect(function() end)
 
                 local cleaner = createCleaner()
                 expect(function()
@@ -55,8 +54,7 @@ return function()
                     local cleaner = createCleaner()
                     expect(function()
                         cleaner.Test = {
-                            [methodName] = function()
-                            end,
+                            [methodName] = function() end,
                         }
                     end).to.never.throw()
                 end)
@@ -82,8 +80,7 @@ return function()
             it("should be bound to __newindex", function()
                 local cleaner = createCleaner()
                 local event = Instance.new("BindableEvent")
-                local connection = event.Event:Connect(function()
-                end)
+                local connection = event.Event:Connect(function() end)
 
                 expect(function()
                     cleaner.Instance = Instance.new("Folder")
@@ -151,8 +148,7 @@ return function()
 
             it("should disconnect connections", function()
                 local event = Instance.new("BindableEvent")
-                local connection = event.Event:Connect(function()
-                end)
+                local connection = event.Event:Connect(function() end)
 
                 local cleaner = createCleaner()
                 cleaner.Test = connection

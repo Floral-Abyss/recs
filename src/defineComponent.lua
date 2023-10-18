@@ -45,8 +45,7 @@ local isComponentArgs = t.strictInterface({
 })
 
 local errorFormats = {
-    nonTableDefaultPropsReturn =
-        "The defaultProps generator for the %s component must return a table, but it returned a %s",
+    nonTableDefaultPropsReturn = "The defaultProps generator for the %s component must return a table, but it returned a %s",
 }
 
 local function defineComponent(args: ComponentArgs): TypeDefinitions.ComponentClass

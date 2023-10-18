@@ -34,7 +34,7 @@ return function()
             name = "TestComponent",
             generator = function()
                 return {}
-            end
+            end,
         })
 
         it("should succeed when called", function()
@@ -57,7 +57,7 @@ return function()
             name = "TestComponent",
             generator = function()
                 return {}
-            end
+            end,
         })
 
         it("should return registered components", function()
@@ -74,7 +74,7 @@ return function()
             name = "TestSingleton",
             generator = function()
                 return {}
-            end
+            end,
         })
 
         it("should add singleton components", function()
@@ -100,7 +100,7 @@ return function()
             name = "TestSingleton",
             generator = function()
                 return {}
-            end
+            end,
         })
 
         it("should get singleton components", function()

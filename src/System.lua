@@ -24,7 +24,7 @@ function System:extend(systemName: string)
             core = core,
             maid = createCleaner(),
         }, {
-            __index = systemClass
+            __index = systemClass,
         })
 
         return systemInstance

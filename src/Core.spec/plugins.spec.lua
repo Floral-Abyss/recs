@@ -10,21 +10,21 @@ return function()
             coreInit = function()
                 expect(callIndex).to.equal(1)
                 callIndex = 1
-            end
+            end,
         }
 
         local pluginB = {
             coreInit = function()
                 expect(callIndex).to.equal(1)
                 callIndex = 2
-            end
+            end,
         }
 
         local pluginC = {
             coreInit = function()
                 expect(callIndex).to.equal(2)
                 callIndex = 3
-            end
+            end,
         }
 
         Core.new({ pluginA, pluginB, pluginC })
@@ -37,7 +37,7 @@ return function()
         local plugin = {
             coreInit = function()
                 callCount = callCount + 1
-            end
+            end,
         }
 
         Core.new({ plugin })
@@ -51,7 +51,7 @@ return function()
             local plugin = {
                 coreInit = function()
                     callCount = callCount + 1
-                end
+                end,
             }
 
             Core.new({ plugin })
@@ -69,7 +69,7 @@ return function()
                     calledCore = core
 
                     expect(self).to.equal(plugin)
-                end
+                end,
             }
 
             local core = Core.new({ plugin })
@@ -84,7 +84,7 @@ return function()
                 name = "TestComponent",
                 generator = function()
                     return {}
-                end
+                end,
             })
 
             local callCount = 0
@@ -108,7 +108,7 @@ return function()
                 name = "TestComponent",
                 generator = function()
                     return {}
-                end
+                end,
             })
 
             local callCount = 0
@@ -146,7 +146,7 @@ return function()
                 name = "TestComponent",
                 generator = function()
                     return {}
-                end
+                end,
             })
 
             local eventFired = false
@@ -174,7 +174,7 @@ return function()
                 name = "TestComponent",
                 generator = function()
                     return {}
-                end
+                end,
             })
 
             local eventFired = false
@@ -204,7 +204,7 @@ return function()
                 name = "TestComponent",
                 generator = function()
                     return {}
-                end
+                end,
             })
 
             local callCount = 0
@@ -237,7 +237,7 @@ return function()
                 name = "TestComponent",
                 generator = function()
                     return {}
-                end
+                end,
             })
 
             local callCount = 0
@@ -270,7 +270,7 @@ return function()
                 name = "TestComponent",
                 generator = function()
                     return {}
-                end
+                end,
             })
 
             local eventFired = false
@@ -299,7 +299,7 @@ return function()
                 name = "TestComponent",
                 generator = function()
                     return {}
-                end
+                end,
             })
 
             local eventFired = false
@@ -328,7 +328,7 @@ return function()
                 name = "TestComponent",
                 generator = function()
                     return {}
-                end
+                end,
             })
 
             local eventFired = false
@@ -359,7 +359,7 @@ return function()
                 name = "TestComponent",
                 generator = function()
                     return {}
-                end
+                end,
             })
 
             local callCount = 0
@@ -392,7 +392,7 @@ return function()
             local plugin = {
                 beforeSystemStart = function(self, core)
                     expect(systemsInitialized).to.equal(false)
-                end
+                end,
             }
 
             local core = Core.new({ plugin })
@@ -414,7 +414,7 @@ return function()
             local plugin = {
                 afterSystemStart = function(self, core)
                     expect(systemsInitialized).to.equal(true)
-                end
+                end,
             }
 
             local core = Core.new({ plugin })
@@ -436,7 +436,7 @@ return function()
             local plugin = {
                 afterStepperStart = function(self, core)
                     expect(systemsInitialized).to.equal(true)
-                end
+                end,
             }
 
             local core = Core.new({ plugin })
