@@ -17,4 +17,4 @@ Found a bug? Have a feature request? Please [submit an issue](https://github.com
 
 ## License
 
-[MIT License](LICENSE.md) © 2019 AmaranthineCodices
+[MIT License](LICENSE.md) © 2023 AmaranthineCodices
