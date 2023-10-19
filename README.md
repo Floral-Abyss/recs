@@ -17,7 +17,7 @@ Primary differences:
 
 ### Wally
 
-RECS is available as a [Wally package](https://wally.run/package/phalanxia/recs?version=0.1.0).
+RECS is available as a [Wally package](https://wally.run/package/phalanxia/recs).
 
 ## Contributing
 
