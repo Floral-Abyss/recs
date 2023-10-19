@@ -1,5 +1,5 @@
 [package]
-name = "Phalanxia/recs"
+name = "phalanxia/recs"
 description = "An entity component system library written in Luau, for use in Roblox."
 authors = ["AmaranthineCodices <git@lily.fyi>", "Madi <me@madi.pizza>"]
 version = "0.1.0"
