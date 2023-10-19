@@ -30,7 +30,7 @@
 ]]
 
 type ComponentArgs = {
-    className: string,
+    name: string,
     generator: (...any) -> any,
     entityFilter: (EntityId) -> boolean,
 }
