@@ -6,13 +6,12 @@ An event stepper is responsible for stepping systems in a deterministic order in
 
 ]]
 
-local TypeDefinitions = require(script.Parent.TypeDefinitions)
 local createCleaner = require(script.Parent.createCleaner)
 
 local EventStepper = {}
 EventStepper.__index = EventStepper
 
-function EventStepper.new(event: RBXScriptSignal, systems: TypeDefinitions.Systems)
+function EventStepper.new(event: RBXScriptSignal, systems)
     local self = setmetatable({
         _cleaner = createCleaner(),
         _event = event,

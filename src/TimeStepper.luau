@@ -6,12 +6,10 @@ A time stepper is responsible for stepping systems in a deterministic order at a
 
 ]]
 
-local TypeDefinitions = require(script.Parent.TypeDefinitions)
-
 local TimeStepper = {}
 TimeStepper.__index = TimeStepper
 
-function TimeStepper.new(interval: number, systems: TypeDefinitions.Systems)
+function TimeStepper.new(interval: number, systems)
     local self = setmetatable({
         _systems = systems,
         _interval = interval,

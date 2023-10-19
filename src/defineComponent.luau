@@ -29,14 +29,14 @@
 
 ]]
 
+local TypeDefinitions = require(script.Parent.TypeDefinitions)
+local t = require(script.Parent.Parent.t)
+
 type ComponentArgs = {
     name: string,
     generator: (...any) -> any,
-    entityFilter: (EntityId) -> boolean,
+    entityFilter: (TypeDefinitions.EntityId) -> boolean,
 }
-
-local TypeDefinitions = require(script.Parent.TypeDefinitions)
-local t = require(script.Parent.Parent.t)
 
 local isComponentArgs = t.strictInterface({
     name = t.string,
