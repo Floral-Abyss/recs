@@ -13,6 +13,17 @@ Primary differences:
 * Components have very little attached behavior
 * Singleton components exist
 
+## Installation
+
+### Wally
+
+RECS is available as a [Wally package](https://wally.run/package/phalanxia/recs?version=0.1.0). To install, add the following to your `wally.toml`:
+
+```toml
+recs = "phalanxia/recs@0.1.0"
+```
+
+
 ## Contributing
 
 Found a bug? Have a feature request? Please [submit an issue](https://github.com/AmaranthineCodices/recs/issues).
