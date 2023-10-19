@@ -8,6 +8,7 @@
 
 # Wally
 packages
+devpackages
 
 # macOS artifacts
 .DS_Store

@@ -1,9 +1,15 @@
 [package]
-name = "recs"
+name = "matches/recs"
+description = "An entity component system library written in Luau, for use in Roblox."
+authors = ["AmaranthineCodices <git@lily.fyi>", "Madi <me@madi.pizza>"]
 version = "0.1.0"
+license = "MIT"
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"
+private = false
 
 [dependencies]
 t = "osyrisrblx/t@3.0.0"
+
+[dev-dependencies]
 TestEZ = "roblox/testez@0.4.1"

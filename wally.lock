@@ -3,9 +3,9 @@
 registry = "test"
 
 [[package]]
-name = "me/recs"
+name = "matches/recs"
 version = "0.1.0"
-dependencies = [["TestEZ", "roblox/testez@0.4.1"], ["t", "osyrisrblx/t@3.0.0"]]
+dependencies = [["t", "osyrisrblx/t@3.0.0"], ["TestEZ", "roblox/testez@0.4.1"]]
 
 [[package]]
 name = "osyrisrblx/t"
