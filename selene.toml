@@ -2,6 +2,7 @@ std = "roblox+testez"
 exclude = [
 	".github/*",
 	"Packages/*",
+	"DevPackages/*",
 	"scripts/*",
 	"tools/*",
 	"*.spec.lua",
