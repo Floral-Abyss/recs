@@ -1,0 +1,13 @@
+std = "roblox+testez"
+exclude = [
+	".github/*",
+	"Packages/*",
+	"scripts/*",
+	"tools/*",
+	"*.spec.lua",
+	"*.spec.luau",
+]
+[lints]
+high_cyclomatic_complexity = "deny"
+if_same_then_else = "allow"
+unused_variable = "allow"

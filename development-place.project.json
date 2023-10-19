@@ -1,5 +1,6 @@
 {
   "name": "RECS",
+  "emitLegacyScripts": false,
   "tree": {
     "$className": "DataModel",
     "HttpService": {
@@ -12,14 +13,9 @@
       "$className": "ReplicatedStorage",
       "Packages": {
         "$className": "Folder",
+        "$path": "Packages",
         "RECS": {
           "$path": "src"
-        },
-        "TestEZ": {
-          "$path": "submodules/testez/src"
-        },
-        "t": {
-          "$path": "submodules/t/lib"
         }
       }
     },

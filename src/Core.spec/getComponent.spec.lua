@@ -6,7 +6,7 @@ return function()
         name = "TestComponent",
         generator = function()
             return {}
-        end
+        end,
     })
 
     it("should get components", function()

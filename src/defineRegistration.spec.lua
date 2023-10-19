@@ -34,7 +34,7 @@ return function()
         it("should throw if the systems table has an element that is not a system class", function()
             expect(function()
                 defineRegistration.interval(1, {
-                    false
+                    false,
                 })
             end).to.throw()
         end)
@@ -72,7 +72,7 @@ return function()
 
             expect(function()
                 defineRegistration.event(event, {
-                    false
+                    false,
                 })
             end).to.throw()
         end)

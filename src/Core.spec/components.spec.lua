@@ -7,7 +7,7 @@ return function()
             name = "TestComponent",
             generator = function()
                 return {}
-            end
+            end,
         })
 
         local core = Core.new()
