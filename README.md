@@ -17,12 +17,7 @@ Primary differences:
 
 ### Wally
 
-RECS is available as a [Wally package](https://wally.run/package/phalanxia/recs?version=0.1.0). To install, add the following to your `wally.toml`:
-
-```toml
-recs = "phalanxia/recs@0.1.0"
-```
-
+RECS is available as a [Wally package](https://wally.run/package/phalanxia/recs?version=0.1.0).
 
 ## Contributing
 
