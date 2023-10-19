@@ -2,7 +2,7 @@
 
 An entity component system library written in [Luau](https://luau-lang.org/), for use in [Roblox](https://create.roblox.com/).
 
-[![CI](https://github.com/AmaranthineCodices/recs/actions/workflows/ci.yml/badge.svg)](https://github.com/AmaranthineCodices/recs/actions/workflows/ci.yml)
+[![CI](https://github.com/AmaranthineCodices/recs/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/AmaranthineCodices/recs/actions/workflows/ci.yml)
 
 ## RobloxComponentSystem
 
