@@ -1,5 +1,5 @@
 {
-  "name": "RECS",
+  "name": "recs",
   "emitLegacyScripts": false,
   "tree": {
     "$className": "DataModel",
