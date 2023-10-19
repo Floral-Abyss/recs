@@ -2,6 +2,8 @@
 
 An entity component system library written in [Luau](https://luau-lang.org/), for use in [Roblox](https://create.roblox.com/).
 
+[![CI](https://github.com/AmaranthineCodices/recs/actions/workflows/ci.yml/badge.svg)](https://github.com/AmaranthineCodices/recs/actions/workflows/ci.yml)
+
 ## RobloxComponentSystem
 
 RECS is largely a work-in-progress successor to [RobloxComponentSystem](https://github.com/tiffany352/RobloxComponentSystem).
