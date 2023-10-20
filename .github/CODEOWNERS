@@ -1,9 +1,9 @@
 * @Phalanxia @AmaranthineCodices
 
-src/BuildInPlugins* @Phalanxia
+src/BuildInPlugins/CollectionService.luau @Phalanxia
+src/BuildInPlugins/ComponentChangedEvent.luau @Phalanxia
+src/BuildInPlugins/ComponentCleaner.luau @Phalanxia
 .github/* @Phalanxia
-.gitignore @Phalanxia
-.gitattributes @Phalanxia
 *aftman* @Phalanxia
 *stylua* @Phalanxia
 *selene* @Phalanxia
