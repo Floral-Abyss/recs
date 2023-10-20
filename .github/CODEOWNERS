@@ -1,0 +1,9 @@
+* @Phalanxia @AmaranthineCodices
+
+src/BuildInPlugins* @Phalanxia
+.github/* @Phalanxia
+.gitignore @Phalanxia
+.gitattributes @Phalanxia
+*aftman* @Phalanxia
+*stylua* @Phalanxia
+*selene* @Phalanxia
