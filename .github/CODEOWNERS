@@ -1,8 +1,8 @@
 * @Phalanxia @AmaranthineCodices
 
-src/BuiltInPlugins/CollectionService.luau @Phalanxia
-src/BuiltInPlugins/ComponentChangedEvent.luau @Phalanxia
-src/BuiltInPlugins/ComponentCleaner.luau @Phalanxia
+recs/BuiltInPlugins/CollectionService.luau @Phalanxia
+recs/BuiltInPlugins/ComponentChangedEvent.luau @Phalanxia
+recs/BuiltInPlugins/ComponentCleaner.luau @Phalanxia
 .github/* @Phalanxia
 *aftman* @Phalanxia
 *stylua* @Phalanxia

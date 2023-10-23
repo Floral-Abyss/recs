@@ -15,7 +15,7 @@
         "$className": "Folder",
         "$path": "Packages",
         "RECS": {
-          "$path": "src"
+          "$path": "recs"
         }
       }
     },
