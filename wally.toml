@@ -2,7 +2,7 @@
 name = "phalanxia/recs"
 description = "An entity component system library written in Luau, for use in Roblox."
 authors = ["AmaranthineCodices <git@lily.fyi>", "Madi <me@madi.pizza>"]
-version = "0.1.2"
+version = "0.1.3"
 license = "MIT"
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"
