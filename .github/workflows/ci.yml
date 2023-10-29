@@ -22,7 +22,7 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         version: "^0.17.0"
-        args: --check src
+        args: --check recs
   selene:
     name: Selene
     runs-on: ubuntu-latest
@@ -35,4 +35,4 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Run Selene
-      run: selene src
+      run: selene recs
