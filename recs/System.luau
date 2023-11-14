@@ -2,7 +2,7 @@
 
 local createCleaner = require(script.Parent.createCleaner)
 
-local System = {}
+local System: { [any]: any } = {}
 System.__index = System
 System._kind = System
 
