@@ -1,0 +1,6 @@
+[package]
+name = "floral-abyss/recs"
+version = "0.1.4"
+author = "Floral Abyss"
+content_root = "recs"
+license = "MIT"
